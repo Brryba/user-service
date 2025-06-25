@@ -1,0 +1,18 @@
+databaseChangeLog:
+  - changeSet:
+      id: 4
+      author: Yury Brazgunou
+      changes:
+        - createIndex:
+            indexName: card_user_id_index
+            tableName: card_info
+            columns:
+              - column:
+                  name: user_id
+
+        - createIndex:
+            indexName: holder_index
+            tableName: card_info
+            columns:
+              - column:
+                  name: holder

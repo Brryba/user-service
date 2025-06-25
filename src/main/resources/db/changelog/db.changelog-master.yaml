@@ -3,3 +3,7 @@ databaseChangeLog:
       file: /db/changelog/changesets/001-create-users_table.yaml
   - include:
       file: /db/changelog/changesets/002-add-users-table-indexes.yaml
+  - include:
+      file: /db/changelog/changesets/003-create-card-info-table.yaml
+  - include:
+      file: /db/changelog/changesets/004-add-card-info-indexes.yaml
