@@ -1,3 +1,5 @@
 databaseChangeLog:
   - include:
-      file:
+      file: /db/changelog/changesets/001-create-users_table.yaml
+  - include:
+      file: /db/changelog/changesets/002-add-users-table-indexes.yaml
