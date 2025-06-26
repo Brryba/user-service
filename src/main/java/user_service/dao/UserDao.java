@@ -13,7 +13,8 @@ import java.util.List;
 public interface UserDao extends CrudRepository<User, Long> {
     public User findUserById(Long id);
 
-    @Query("SELECT user FROM User user JOIN user.cards cards")
+    @Query("SELECT user FROM User user JOIN user.cards cards " +
+            "WHERE user.id In :ids")
     List<User> findUsersByIdIn(List<Long> ids);
 
     public User findUserByEmail(String email);
