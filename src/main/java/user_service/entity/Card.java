@@ -1,9 +1,8 @@
 package user_service.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Pattern;
 import lombok.Data;
-
-import java.time.LocalDate;
 
 @Entity
 @Table(name = "card_info")
@@ -19,6 +18,7 @@ public class Card {
     private String number;
     @Column(nullable = false)
     private String holder;
-    @Column(nullable = false)
-    private LocalDate expirationDate;
+    @Column(nullable = false, length = 5)
+    @Pattern(regexp = "^(0[1-9]|1[0-2])/\\d{2}$")
+    private String expirationDate;
 }
