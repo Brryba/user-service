@@ -21,5 +21,6 @@ public class BaseUserRequestDto {
     protected LocalDate birthDate;
     @NotBlank(message = "Email is required")
     @Size(max = 100, message = "Email must be shorter than 100 symbols")
+    @Email(message = "Incorrect email format")
     protected String email;
 }
