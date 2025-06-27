@@ -15,7 +15,10 @@ public class Card {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+    @Column(nullable = false, unique = true, length = 16)
     private String number;
+    @Column(nullable = false)
     private String holder;
+    @Column(nullable = false)
     private LocalDate expirationDate;
 }
