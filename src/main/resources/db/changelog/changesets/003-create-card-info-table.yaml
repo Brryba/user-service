@@ -31,7 +31,6 @@ databaseChangeLog:
                   type: varchar(50)
                   constraints:
                     nullable: false
-                    checkConstraint: "holder ~ '^[A-Za-z]+ [A-Za-z]+$'"
               - column:
                   name: expiration_date
                   type: char(5)
