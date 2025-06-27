@@ -2,6 +2,7 @@ package user_service.dto.user;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class BaseUserRequestDto {
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name must not be longer than 100 letters")
