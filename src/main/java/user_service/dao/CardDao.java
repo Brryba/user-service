@@ -19,4 +19,6 @@ public interface CardDao extends JpaRepository<Card, Long> {
     @Query(value = "DELETE FROM public.card_info " +
             "WHERE card_info.id = :id", nativeQuery = true)
     public void deleteCardById(Long id);
+
+    Card findCardByNumber(String number);
 }
