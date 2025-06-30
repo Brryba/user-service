@@ -12,7 +12,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class BaseUserRequestDto {
+public class UserRequestDto {
     @NotBlank(message = "Name is required")
     @Size(max = 100, message = "Name must not be longer than 100 letters")
     protected String name;

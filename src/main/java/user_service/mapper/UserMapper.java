@@ -1,8 +1,7 @@
 package user_service.mapper;
 
 import org.mapstruct.*;
-import user_service.dto.user.BaseUserRequestDto;
-import user_service.dto.user.IdUserRequestDto;
+import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
 
@@ -11,8 +10,6 @@ import user_service.entity.User;
 public interface UserMapper {
     @Mapping(target = "cards", ignore = true)
     @Mapping(target = "id", ignore = true)
-    User toUser(BaseUserRequestDto baseUserRequestDto);
-    @Mapping(target = "cards", ignore = true)
-    User toUser(IdUserRequestDto idUserRequestDto);
+    User toUser(UserRequestDto userRequestDto);
     UserResponseDto toResponseDto(User user);
 }

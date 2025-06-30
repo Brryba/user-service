@@ -22,7 +22,7 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto createUser(BaseUserRequestDto userRequestDto) {
+    public UserResponseDto createUser(UserRequestDto userRequestDto) {
         String email = userRequestDto.getEmail();
         if (userDao.findUserByEmail(email) != null) {
             throw new EmailAlreadyExistsException();
@@ -61,26 +61,30 @@ public class UserService {
     }
 
     @Transactional
-    public UserResponseDto updateUser(IdUserRequestDto userRequestDto) {
-        long id = userRequestDto.getId();
+    public UserResponseDto updateUser(UserRequestDto userRequestDto, long id) {
         User existingUser = userDao.findUserById(id);
         if (existingUser == null) {
             throw new UserNotFoundException(id);
         }
+        String email = userRequestDto.getEmail();
+        if (!existingUser.getEmail().equals(email)
+                && userDao.findUserByEmail(email) != null) {
+            throw new EmailAlreadyExistsException();
+        }
 
         User updatedUser = userMapper.toUser(userRequestDto);
+        updatedUser.setId(id);
         userDao.save(updatedUser);
         return userMapper.toResponseDto(updatedUser);
     }
 
     @Transactional
-    public UserResponseDto deleteUser(long id) {
+    public void deleteUser(long id) {
         User user = userDao.findUserById(id);
         if (user == null) {
             throw new UserNotFoundException(id);
         }
 
         userDao.delete(user);
-        return userMapper.toResponseDto(user);
     }
 }
