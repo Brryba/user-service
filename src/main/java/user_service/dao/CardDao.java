@@ -7,11 +7,12 @@ import org.springframework.stereotype.Repository;
 import user_service.entity.Card;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface CardDao extends JpaRepository<Card, Long> {
     @Query("SELECT card FROM Card card WHERE card.id = :id")
-    public Card findCardById(Long id);
+    public Optional<Card> findCardById(Long id);
 
     public List<Card> findCardsByIdIn(List<Long> ids);
 
@@ -20,5 +21,5 @@ public interface CardDao extends JpaRepository<Card, Long> {
             "WHERE card_info.id = :id", nativeQuery = true)
     public void deleteCardById(Long id);
 
-    Card findCardByNumber(String number);
+    public Optional<Card> findCardByNumber(String number);
 }

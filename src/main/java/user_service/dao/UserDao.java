@@ -7,17 +7,18 @@ import org.springframework.stereotype.Repository;
 import user_service.entity.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 @Table(name = "users")
 public interface UserDao extends CrudRepository<User, Long> {
-    public User findUserById(Long id);
+    public Optional<User> findUserById(Long id);
 
     @Query("SELECT user FROM User user " +
             "WHERE user.id In :ids")
     List<User> findUsersByIdIn(List<Long> ids);
 
-    public User findUserByEmail(String email);
+    public Optional<User> findUserByEmail(String email);
 
     public void deleteUserById(Long id);
 }

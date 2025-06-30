@@ -30,15 +30,14 @@ public class CardService {
     }
 
     private void validateCardNumberUnique(CardRequestDto cardRequestDto) throws CardNumberNotUniqueException {
-        String number = cardRequestDto.getNumber();
-        if (cardDao.findCardByNumber(number) != null) {
-            throw new CardNumberNotUniqueException();
-        }
+        String number = cardRequestDto.getNumber().describeConstable()
+                .orElseThrow(CardNumberNotUniqueException::new);
     }
 
     private User getCardOwnerUserById(CardRequestDto cardRequestDto) throws UserNotFoundException {
-        long userId = cardRequestDto.getUserId();
-        User user = userDao.findUserById(userId);
+        final long userId = cardRequestDto.getUserId();
+        User user = userDao.findUserById(userId)
+                .orElseThrow(() -> new UserNotFoundException(userId));
         if (user == null) {
             throw new UserNotFoundException(userId);
         }
@@ -47,7 +46,6 @@ public class CardService {
 
     public CardResponseDto createCard(CardRequestDto cardRequestDto) {
         validateCardNumberUnique(cardRequestDto);
-
         Card card = cardMapper.toCard(cardRequestDto);
         card.setUser(getCardOwnerUserById(cardRequestDto));
         cardDao.save(card);
@@ -55,10 +53,8 @@ public class CardService {
     }
 
     public CardResponseDto getCardById(Long id) {
-        Card card = cardDao.findCardById(id);
-        if (card == null) {
-            throw new CardNotFoundException(id);
-        }
+        Card card = cardDao.findCardById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
         return cardMapper.toResponseDto(card);
     }
 
@@ -75,10 +71,8 @@ public class CardService {
 
     @Transactional
     public CardResponseDto updateCard(CardRequestDto cardRequestDto, long id) {
-        Card card = cardDao.findCardById(id);
-        if (card == null) {
-            throw new CardNotFoundException(id);
-        }
+        Card card = cardDao.findCardById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
         if (!cardRequestDto.getNumber().equals(card.getNumber())) {
             validateCardNumberUnique(cardRequestDto);
         }
@@ -94,10 +88,8 @@ public class CardService {
 
     @Transactional
     public void deleteCard(Long id) {
-        Card card = cardDao.findCardById(id);
-        if (card == null) {
-            throw new CardNotFoundException(id);
-        }
+        Card card = cardDao.findCardById(id)
+                .orElseThrow(() -> new CardNotFoundException(id));
 
         cardDao.delete(card);
     }

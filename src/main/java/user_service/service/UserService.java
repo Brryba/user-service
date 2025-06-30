@@ -24,8 +24,8 @@ public class UserService {
     @Transactional
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         String email = userRequestDto.getEmail();
-        if (userDao.findUserByEmail(email) != null) {
-            throw new EmailAlreadyExistsException();
+        if (userDao.findUserByEmail(email).isPresent()) {
+            throw new EmailAlreadyExistsException(email);
         }
 
         User user = userMapper.toUser(userRequestDto);
@@ -34,10 +34,7 @@ public class UserService {
     }
 
     public UserResponseDto getUserById(Long id) {
-        User user = userDao.findUserById(id);
-        if (user == null) {
-            throw new UserNotFoundException(id);
-        }
+        User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
         return userMapper.toResponseDto(user);
     }
 
@@ -53,23 +50,17 @@ public class UserService {
     }
 
     public UserResponseDto getUserByEmail(String email) {
-        User user = userDao.findUserByEmail(email);
-        if (user == null) {
-            throw new UserNotFoundException(email);
-        }
+        User user = userDao.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
         return userMapper.toResponseDto(user);
     }
 
     @Transactional
     public UserResponseDto updateUser(UserRequestDto userRequestDto, long id) {
-        User existingUser = userDao.findUserById(id);
-        if (existingUser == null) {
-            throw new UserNotFoundException(id);
-        }
+        User existingUser = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
         String email = userRequestDto.getEmail();
         if (!existingUser.getEmail().equals(email)
-                && userDao.findUserByEmail(email) != null) {
-            throw new EmailAlreadyExistsException();
+                && userDao.findUserByEmail(email).isPresent()) {
+            throw new EmailAlreadyExistsException(email);
         }
 
         User updatedUser = userMapper.toUser(userRequestDto);
@@ -80,10 +71,7 @@ public class UserService {
 
     @Transactional
     public void deleteUser(long id) {
-        User user = userDao.findUserById(id);
-        if (user == null) {
-            throw new UserNotFoundException(id);
-        }
+        User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
 
         userDao.delete(user);
     }
