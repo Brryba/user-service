@@ -1,8 +1,13 @@
 package user_service.mapper;
 
-import org.mapstruct.*;
-import user_service.dto.card.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingTarget;
+import org.mapstruct.Named;
+import org.mapstruct.ReportingPolicy;
 
+import user_service.dto.card.CardRequestDto;
+import user_service.dto.card.CardResponseDto;
 import user_service.entity.Card;
 import user_service.entity.User;
 

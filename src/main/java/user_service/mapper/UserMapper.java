@@ -1,6 +1,9 @@
 package user_service.mapper;
 
-import org.mapstruct.*;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.MappingConstants;
+import org.mapstruct.ReportingPolicy;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
