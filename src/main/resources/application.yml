@@ -11,3 +11,7 @@ spring:
 
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yaml
+
+server:
+  error:
+    include-stacktrace: never
