@@ -33,7 +33,7 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<?> getUsersByIds(
+    public ResponseEntity<?> getUsersByIdsOrEmail(
             @RequestParam(required = false) List<Long> ids,
             @RequestParam(required = false) String email) {
         if (ids != null && email != null) {
@@ -51,7 +51,7 @@ public class UserController {
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDto updateUser(@PathVariable long id,
-                                                      @RequestBody @Valid UserRequestDto user) {
+                                      @RequestBody @Valid UserRequestDto user) {
         return userService.updateUser(user, id);
     }
 

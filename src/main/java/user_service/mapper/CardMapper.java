@@ -1,9 +1,6 @@
 package user_service.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.Named;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import user_service.dto.card.*;
 
 import user_service.entity.Card;
@@ -15,14 +12,23 @@ import static org.mapstruct.MappingConstants.ComponentModel.SPRING;
 public interface CardMapper {
     @Mapping(target = "user", ignore = true)
     @Mapping(target = "id", ignore = true)
-    Card toCard(BaseCardRequestDto baseCardRequestDto);
-    @Mapping(target = "user", ignore = true)
-    Card toCard(IdCardRequestDto idCardRequestDto);
+    @Mapping(target = "holder", source = "holder", qualifiedByName = "capitalizeHolderName")
+    Card toCard(CardRequestDto cardRequestDto);
+
     @Mapping(target = "userId", source = "user", qualifiedByName = "setUserId")
     CardResponseDto toResponseDto(Card card);
+
+    @Mapping(target = "user", ignore = true)
+    @Mapping(target = "id", ignore = true)
+    void updateCardFromDto(CardRequestDto dto, @MappingTarget Card card);
 
     @Named("setUserId")
     default long setUserId(User user) {
         return user.getId();
+    }
+
+    @Named("capitalizeHolderName")
+    default String capitalizeHolderName(String holder) {
+        return holder.toUpperCase();
     }
 }

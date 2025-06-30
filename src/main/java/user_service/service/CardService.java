@@ -4,7 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import user_service.dao.CardDao;
 import user_service.dao.UserDao;
-import user_service.dto.card.BaseCardRequestDto;
+import user_service.dto.card.CardRequestDto;
 import user_service.dto.card.CardResponseDto;
 import user_service.entity.Card;
 import user_service.entity.User;
@@ -29,23 +29,27 @@ public class CardService {
         this.cardMapper = cardMapper;
     }
 
-    private void validateCardInfo(BaseCardRequestDto cardRequestDto) {
+    private void validateCardNumberUnique(CardRequestDto cardRequestDto) throws CardNumberNotUniqueException {
         String number = cardRequestDto.getNumber();
         if (cardDao.findCardByNumber(number) != null) {
             throw new CardNumberNotUniqueException();
         }
+    }
 
+    private User getCardOwnerUserById(CardRequestDto cardRequestDto) throws UserNotFoundException {
         long userId = cardRequestDto.getUserId();
         User user = userDao.findUserById(userId);
         if (user == null) {
             throw new UserNotFoundException(userId);
         }
+        return user;
     }
 
-    public CardResponseDto createCard(BaseCardRequestDto cardRequestDto) {
-        validateCardInfo(cardRequestDto);
+    public CardResponseDto createCard(CardRequestDto cardRequestDto) {
+        validateCardNumberUnique(cardRequestDto);
 
         Card card = cardMapper.toCard(cardRequestDto);
+        card.setUser(getCardOwnerUserById(cardRequestDto));
         cardDao.save(card);
         return cardMapper.toResponseDto(card);
     }
@@ -70,22 +74,31 @@ public class CardService {
     }
 
     @Transactional
-    public CardResponseDto updateCard(BaseCardRequestDto cardRequestDto) {
-        validateCardInfo(cardRequestDto);
+    public CardResponseDto updateCard(CardRequestDto cardRequestDto, long id) {
+        Card card = cardDao.findCardById(id);
+        if (card == null) {
+            throw new CardNotFoundException(id);
+        }
+        if (!cardRequestDto.getNumber().equals(card.getNumber())) {
+            validateCardNumberUnique(cardRequestDto);
+        }
 
-        Card card = cardMapper.toCard(cardRequestDto);
+        cardMapper.updateCardFromDto(cardRequestDto, card);
+        if (!card.getUser().getId().equals(cardRequestDto.getUserId())) {
+            card.setUser(getCardOwnerUserById(cardRequestDto));
+        }
+
         cardDao.save(card);
         return cardMapper.toResponseDto(card);
     }
 
     @Transactional
-    public CardResponseDto deleteCard(Long id) {
+    public void deleteCard(Long id) {
         Card card = cardDao.findCardById(id);
         if (card == null) {
             throw new CardNotFoundException(id);
         }
 
         cardDao.delete(card);
-        return cardMapper.toResponseDto(card);
     }
 }

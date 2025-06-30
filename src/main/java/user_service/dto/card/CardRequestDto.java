@@ -11,19 +11,19 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class BaseCardRequestDto {
+public class CardRequestDto {
     @NotNull(message = "User id is missing")
     protected Long userId;
     @NotBlank(message = "Card number is missing")
     @Size(min = 16, max = 16,
             message = "Card number should consist of 16 digits")
     @Pattern(regexp = "^[0-9]{16}$",
-            message = "Card number should only contains digits")
+            message = "Card number should only contains 16 digits")
     protected String number;
     @NotBlank(message = "Holder is missing")
     protected String holder;
     @NotBlank(message = "Expiration date is missing")
-    @Pattern(regexp = "^(0[1-9]|1[0-2]/[0-9]{2})$",
+    @Pattern(regexp = "^(0[1-9]|1[0-2])/[0-9]{2}$",
             message = "Expiration date should be in MM/YY format")
     protected String expirationDate;
 }
