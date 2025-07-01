@@ -17,10 +17,8 @@ import user_service.exception.UserNotFoundException;
 import user_service.exception.UsersNotFoundException;
 import user_service.mapper.UserMapper;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 @Service
 public class UserService {
@@ -95,10 +93,9 @@ public class UserService {
             }
         }
 
-        User updatedUser = userMapper.toUser(userRequestDto);
-        updatedUser.setId(id);
-        userDao.save(updatedUser);
-        return userMapper.toResponseDto(updatedUser);
+        userMapper.updateUserFromDto(userRequestDto, existingUser);
+        userDao.save(existingUser);
+        return userMapper.toResponseDto(existingUser);
     }
 
     @Transactional

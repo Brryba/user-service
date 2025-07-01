@@ -15,6 +15,7 @@ public interface UserDao extends CrudRepository<User, Long> {
     public Optional<User> findUserById(Long id);
 
     @Query("SELECT user FROM User user " +
+            "JOIN FETCH user.cards " +
             "WHERE user.id In :ids")
     List<User> findUsersByIdIn(List<Long> ids);
 
