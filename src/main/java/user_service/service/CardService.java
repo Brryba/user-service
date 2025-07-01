@@ -1,5 +1,6 @@
 package user_service.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import user_service.dao.CardDao;
@@ -18,16 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class CardService {
     private final UserDao userDao;
     private final CardDao cardDao;
     private final CardMapper cardMapper;
-
-    public CardService(UserDao userDao, CardDao cardDao, CardMapper cardMapper) {
-        this.userDao = userDao;
-        this.cardDao = cardDao;
-        this.cardMapper = cardMapper;
-    }
+    private final UserService userService;
 
     private void validateCardNumberUnique(CardRequestDto cardRequestDto) throws CardNumberNotUniqueException {
         String number = cardRequestDto.getNumber();
@@ -51,6 +48,7 @@ public class CardService {
         Card card = cardMapper.toCard(cardRequestDto);
         card.setUser(getCardOwnerUserById(cardRequestDto));
         cardDao.save(card);
+        userService.evictUserCache(cardRequestDto.getUserId());
         return cardMapper.toResponseDto(card);
     }
 
@@ -81,10 +79,12 @@ public class CardService {
 
         cardMapper.updateCardFromDto(cardRequestDto, card);
         if (!card.getUser().getId().equals(cardRequestDto.getUserId())) {
+            userService.evictUserCache(card.getUser().getId());
             card.setUser(getCardOwnerUserById(cardRequestDto));
         }
 
         cardDao.save(card);
+        userService.evictUserCache(cardRequestDto.getUserId());
         return cardMapper.toResponseDto(card);
     }
 
@@ -93,6 +93,7 @@ public class CardService {
         Card card = cardDao.findCardById(id)
                 .orElseThrow(() -> new CardNotFoundException(id));
 
+        userService.evictUserCache(card.getUser().getId());
         cardDao.delete(card);
     }
 }

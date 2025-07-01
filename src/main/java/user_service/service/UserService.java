@@ -1,8 +1,8 @@
 package user_service.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -21,16 +21,11 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
     private final UserDao userDao;
     private final UserMapper userMapper;
     private final CacheManager cacheManager;
-
-    public UserService(UserDao userDao, UserMapper userMapper, CacheManager cacheManager) {
-        this.userDao = userDao;
-        this.userMapper = userMapper;
-        this.cacheManager = cacheManager;
-    }
 
     @Transactional
     @Caching(put = {
@@ -99,15 +94,19 @@ public class UserService {
     }
 
     @Transactional
-    @CacheEvict(value = "user:id", key = "#id")
     public void deleteUser(long id) {
         User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
-
-        Cache emailCache = cacheManager.getCache("user:email");
-        if (emailCache != null) {
-            emailCache.evict(user.getEmail());
-        }
-
+        evictUserCache(user.getId());
         userDao.delete(user);
+    }
+
+    public void evictUserCache(long userId) {
+        UserResponseDto userResponseDto = cacheManager
+                .getCache("user:id").get(userId, UserResponseDto.class);
+
+        if (userResponseDto != null) {
+            cacheManager.getCache("user:email").evict(userResponseDto.getEmail());
+            cacheManager.getCache("user:id").evict(userId);
+        }
     }
 }
