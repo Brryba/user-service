@@ -1,11 +1,10 @@
 package user_service.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import user_service.dao.UserDao;
@@ -28,10 +27,7 @@ public class UserService {
     private final CacheManager cacheManager;
 
     @Transactional
-    @Caching(put = {
-            @CachePut(value = "user:id", key = "#result.id"),
-            @CachePut(value = "user:email", key = "#result.email")
-    })
+    @CachePut(value = "user:id", key = "#result.id")
     public UserResponseDto createUser(UserRequestDto userRequestDto) {
         String email = userRequestDto.getEmail();
         if (userDao.findUserByEmail(email).isPresent()) {
@@ -61,17 +57,13 @@ public class UserService {
     }
 
 
-    @Cacheable("user:email")
     public UserResponseDto getUserByEmail(String email) {
         User user = userDao.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
         return userMapper.toResponseDto(user);
     }
 
     @Transactional
-    @Caching(put = {
-            @CachePut(value = "user:id", key = "#id"),
-            @CachePut(value = "user:email", key = "#result.email")
-    })
+    @CachePut(value = "user:id", key = "#id")
     public UserResponseDto updateUser(UserRequestDto userRequestDto, long id) {
         User existingUser = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
         String email = userRequestDto.getEmail();
@@ -81,11 +73,6 @@ public class UserService {
             if (userDao.findUserByEmail(email).isPresent()) {
                 throw new EmailAlreadyExistsException(email);
             }
-
-            Cache emailCache = cacheManager.getCache("user:email");
-            if (emailCache != null) {
-                emailCache.evict(existingUser.getEmail());
-            }
         }
 
         userMapper.updateUserFromDto(userRequestDto, existingUser);
@@ -94,19 +81,11 @@ public class UserService {
     }
 
     @Transactional
+    @CacheEvict(value = "user:id", key = "#id")
     public void deleteUser(long id) {
         User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
-        evictUserCache(user.getId());
+        user.getCards().forEach((card) ->
+                cacheManager.getCache("card:id").evict(card.getId()));
         userDao.delete(user);
-    }
-
-    public void evictUserCache(long userId) {
-        UserResponseDto userResponseDto = cacheManager
-                .getCache("user:id").get(userId, UserResponseDto.class);
-
-        if (userResponseDto != null) {
-            cacheManager.getCache("user:email").evict(userResponseDto.getEmail());
-            cacheManager.getCache("user:id").evict(userId);
-        }
     }
 }
