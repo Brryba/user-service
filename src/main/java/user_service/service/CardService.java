@@ -30,8 +30,10 @@ public class CardService {
     }
 
     private void validateCardNumberUnique(CardRequestDto cardRequestDto) throws CardNumberNotUniqueException {
-        String number = cardRequestDto.getNumber().describeConstable()
-                .orElseThrow(CardNumberNotUniqueException::new);
+        String number = cardRequestDto.getNumber();
+        if (cardDao.findCardByNumber(number).isPresent()) {
+            throw new CardNumberNotUniqueException();
+        }
     }
 
     private User getCardOwnerUserById(CardRequestDto cardRequestDto) throws UserNotFoundException {
