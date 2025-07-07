@@ -65,7 +65,8 @@ public class UserService {
     @Transactional
     @CachePut(value = "user:id", key = "#id")
     public UserResponseDto updateUser(UserRequestDto userRequestDto, long id) {
-        User existingUser = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
+        User existingUser = userDao.findUserById(id)
+                .orElseThrow(() -> new UserNotFoundException(id));
         String email = userRequestDto.getEmail();
 
         boolean emailChanged = !existingUser.getEmail().equals(email);
