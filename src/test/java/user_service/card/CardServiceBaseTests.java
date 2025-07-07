@@ -18,7 +18,7 @@ public class CardServiceBaseTests {
     protected CardDao cardDao;
 
     @MockitoBean
-    private UserDao userDao;
+    protected UserDao userDao;
 
     protected Card card;
 
@@ -39,7 +39,7 @@ public class CardServiceBaseTests {
                 .user(this.cardUser)
                 .holder("Some Holder")
                 .expirationDate("10/27")
-                .number("001122334455667788")
+                .number("0011223344556677")
                 .build();
     }
 
@@ -48,7 +48,7 @@ public class CardServiceBaseTests {
                 .userId(1L)
                 .holder("Some Holder")
                 .expirationDate("10/27")
-                .number("001122334455667788")
+                .number("0011223344556677")
                 .build();
     }
 

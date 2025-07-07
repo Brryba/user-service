@@ -67,7 +67,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
 
     @Test
     public void createCard_cardNumberNotUnique_throwsException() {
-        when(cardDao.findCardByNumber("001122334455667788"))
+        when(cardDao.findCardByNumber("0011223344556677"))
                 .thenReturn(Optional.of(card));
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
@@ -176,13 +176,13 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
     @Test
     public void updateCard_cardNumberNotUnique_throwsException() {
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
-        when(cardDao.findCardByNumber("001122334455667788"))
+        when(cardDao.findCardByNumber("0011223344556677"))
                 .thenReturn(Optional.ofNullable(card));
 
-        cardRequestDto.setNumber("001122334455667788");
+        cardRequestDto.setNumber("0011223344556677");
         Card card2 = buildCard();
         card2.setId(2L);
-        card2.setNumber("887766554433221100");
+        card2.setNumber("7766554433221100");
         when(cardDao.findCardById(2L)).thenReturn(Optional.of(card2));
 
         assertThrows(CardNumberNotUniqueException.class,
