@@ -1,5 +1,6 @@
 package user_service.card;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -45,6 +46,12 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
 
     @Autowired
     private CardService cardService;
+
+    @AfterEach
+    void clearCache() {
+        cacheManager.getCache("user:id").clear();
+        cacheManager.getCache("card:id").clear();
+    }
 
     @Test
     public void getCardById_shouldCacheResult() {

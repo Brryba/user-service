@@ -99,6 +99,12 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-suite-engine</artifactId>
+            <version>1.12.2</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
