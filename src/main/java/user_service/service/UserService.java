@@ -35,7 +35,7 @@ public class UserService {
         }
 
         User user = userMapper.toUser(userRequestDto);
-        userDao.save(user);
+        user = userDao.save(user);
         return userMapper.toResponseDto(user);
     }
 

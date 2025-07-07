@@ -50,7 +50,7 @@ public class CardService {
         validateCardNumberUnique(cardRequestDto);
         Card card = cardMapper.toCard(cardRequestDto);
         card.setUser(getCardOwnerUserById(cardRequestDto));
-        cardDao.save(card);
+        card = cardDao.save(card);
         return cardMapper.toResponseDto(card);
     }
 
