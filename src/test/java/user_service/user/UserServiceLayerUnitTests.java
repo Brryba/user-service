@@ -52,7 +52,7 @@ public class UserServiceLayerUnitTests extends UserServiceBaseTests {
     }
 
     @Test
-    public void createCardTest_success() {
+    public void createUserTest_success() {
         given(userDao.save(any(User.class))).willReturn(user);
 
         UserResponseDto userResponseDto = userService.createUser(userRequestDto);
@@ -63,7 +63,7 @@ public class UserServiceLayerUnitTests extends UserServiceBaseTests {
     }
 
     @Test
-    public void createCardTest_failure_emailAlreadyExists() {
+    public void createUserTest_failure_emailAlreadyExists() {
         given(userDao.save(any(User.class))).willReturn(user);
         given(userDao.findUserByEmail("email@email.com")).willReturn(Optional.of(user));
 
