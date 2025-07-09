@@ -4,8 +4,6 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
@@ -34,7 +32,6 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-@ExtendWith(MockitoExtension.class)
 @SpringBootTest
 @EnableCaching
 @Testcontainers
@@ -99,8 +96,6 @@ public class UserTestContainersTests {
     @Test
     void testRedisConnection() {
         assertThat(redis.isRunning()).isTrue();
-        System.out.println("Redis host: " + redis.getHost());
-        System.out.println("Redis port: " + redis.getMappedPort(6379));
     }
 
     @Test
