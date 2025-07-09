@@ -1,4 +1,4 @@
-package user_service.user;
+package user_service.unit_tests.user;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,4 +1,4 @@
-package user_service.card;
+package user_service.unit_tests.card;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
