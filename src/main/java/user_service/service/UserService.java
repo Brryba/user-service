@@ -85,8 +85,10 @@ public class UserService {
     @CacheEvict(value = "user:id", key = "#id")
     public void deleteUser(long id) {
         User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
-        user.getCards().forEach((card) ->
-                cacheManager.getCache("card:id").evict(card.getId()));
+        if (user.getCards() != null) {
+            user.getCards().forEach((card) ->
+                    cacheManager.getCache("card:id").evict(card.getId()));
+        }
         userDao.delete(user);
     }
 }

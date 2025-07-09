@@ -1,6 +1,7 @@
 package user_service.dao;
 
 import jakarta.persistence.Table;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.stereotype.Repository;
@@ -14,9 +15,9 @@ import java.util.Optional;
 public interface UserDao extends CrudRepository<User, Long> {
     public Optional<User> findUserById(Long id);
 
+    @EntityGraph(attributePaths = {"cards"})
     @Query("SELECT user FROM User user " +
-            "JOIN FETCH user.cards " +
-            "WHERE user.id In :ids")
+            "WHERE user.id IN :ids")
     List<User> findUsersByIdIn(List<Long> ids);
 
     public Optional<User> findUserByEmail(String email);
