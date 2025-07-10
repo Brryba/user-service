@@ -1,4 +1,7 @@
 spring:
+  config:
+    import: optional:file:.env[.properties]
+
   data:
     redis:
       port: 6379
@@ -9,9 +12,9 @@ spring:
       time-to-live: 600000
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/user_service
-    username: postgres
-    password: admin
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     show-sql: true
     properties:
