@@ -1,0 +1,38 @@
+version: '3.9'
+
+services:
+  app:
+    image: 'user_service'
+    build:
+      context: .
+    container_name: 'user_service_app'
+    depends_on:
+      - db
+      - redis_cache
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/${POSTGRES_DB}
+      - SPRING_DATASOURCE_USERNAME=${POSTGRES_USER}
+      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD}
+
+      - SPRING_DATA_REDIS_PORT=6379
+      - SPRING_DATA_REDIS_HOST=redis_cache
+
+    ports:
+      - "8080:8080"
+
+  db:
+    image: postgres
+    container_name: db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+    ports:
+      - "5432:5432"
+
+  redis_cache:
+    image: 'redis:alpine'
+    container_name: 'redis_cache'
+    restart: always
+    ports:
+      - "6379:6379"
