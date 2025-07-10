@@ -205,7 +205,7 @@ public class CardTestContainerTests {
     void deletingUser_deletesAllUserCards_andCaches() {
         CardResponseDto createdCard = cardService.createCard(cardRequestDto);
 
-        userService.deleteUser(createdCard.getId());
+        userService.deleteUser(createdCard.getUserId());
 
         assertFalse(cardDao.findCardById(createdCard.getId()).isPresent());
         Cache cardCache = cacheManager.getCache("card:id");

@@ -5,5 +5,5 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @SelectPackages("user_service")
-class UserServiceApplicationTests {
+class UserServiceApplicationTestSuite {
 }
