@@ -7,7 +7,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -24,6 +23,7 @@ import user_service.controller.UserController;
 import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
+import user_service.exception.InvalidRequestException;
 import user_service.exception.UserNotFoundException;
 import user_service.exception.UsersNotFoundException;
 import user_service.service.UserService;
@@ -173,7 +173,8 @@ public class UserMockmvcTests {
 
     @Test
     public void getUserByEmailTest_success() throws Exception {
-        when(userService.getUserByEmail(userRequestDto.getEmail())).thenReturn(userResponseDto);
+        when(userService.getUsersByIdsOrEmail(null, userRequestDto.getEmail()))
+                .thenReturn(userResponseDto);
 
         mockMvc.perform(get("/api/user?email=email@email.com"))
                 .andDo(print())
@@ -183,7 +184,7 @@ public class UserMockmvcTests {
 
     @Test
     public void getUserByEmailTest_failure_noUserEmailExists() throws Exception {
-        when(userService.getUserByEmail(userRequestDto.getEmail()))
+        when(userService.getUsersByIdsOrEmail(null, userRequestDto.getEmail()))
                 .thenThrow(new UserNotFoundException(userRequestDto.getEmail()));
 
         mockMvc.perform(get("/api/user?email=email@email.com"))
@@ -194,7 +195,7 @@ public class UserMockmvcTests {
 
     @Test
     public void getUsersByIds() throws Exception {
-        when(userService.getUsersByIds(List.of(1L, 2L)))
+        when(userService.getUsersByIdsOrEmail(List.of(1L, 2L), null))
                 .thenReturn(List.of(userResponseDto));
 
         mockMvc.perform(get("/api/user?ids=1,2"))
@@ -206,7 +207,8 @@ public class UserMockmvcTests {
 
     @Test
     public void getUsersByIds_failure_noneUserIdExists() throws Exception {
-        when(userService.getUsersByIds(List.of(1L, 2L))).thenThrow(new UsersNotFoundException());
+        when(userService.getUsersByIdsOrEmail(List.of(1L, 2L), null))
+                .thenThrow(new UsersNotFoundException());
 
         mockMvc.perform(get("/api/user?ids=1,2"))
                 .andDo(print())
@@ -215,6 +217,9 @@ public class UserMockmvcTests {
 
     @Test
     public void getUsers_NoRequestParams() throws Exception {
+        when(userService.getUsersByIdsOrEmail(null, null))
+                .thenThrow(new InvalidRequestException("Bad request"));
+
         mockMvc.perform(get("/api/user?wrong=param"))
                 .andDo(print())
                 .andExpect(status().isBadRequest());

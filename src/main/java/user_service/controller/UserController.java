@@ -2,6 +2,7 @@ package user_service.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,10 +42,10 @@ public class UserController {
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public Object getUsersByIdsOrEmail(
+    public ResponseEntity<?> getUsersByIdsOrEmail(
             @RequestParam(required = false) List<Long> ids,
             @RequestParam(required = false) String email) {
-        return userService.getUsersByIdsOrEmail(ids, email);
+        return new ResponseEntity<>(userService.getUsersByIdsOrEmail(ids, email), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
