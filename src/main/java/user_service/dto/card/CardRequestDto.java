@@ -14,15 +14,15 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CardRequestDto {
     @NotNull(message = "User id is missing")
-    protected Long userId;
+    private Long userId;
     @NotBlank(message = "Card number is missing")
     @Pattern(regexp = "^[0-9]{16}$",
             message = "Card number should only contains 16 digits")
-    protected String number;
+    private String number;
     @NotBlank(message = "Holder is missing")
-    protected String holder;
+    private String holder;
     @NotBlank(message = "Expiration date is missing")
     @Pattern(regexp = "^(0[1-9]|1[0-2])/[0-9]{2}$",
             message = "Expiration date should be in MM/YY format")
-    protected String expirationDate;
+    private String expirationDate;
 }

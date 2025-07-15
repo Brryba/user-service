@@ -12,6 +12,7 @@ import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
 import user_service.exception.EmailAlreadyExistsException;
+import user_service.exception.InvalidRequestException;
 import user_service.exception.UserNotFoundException;
 import user_service.exception.UsersNotFoundException;
 import user_service.mapper.UserMapper;
@@ -43,6 +44,19 @@ public class UserService {
     public UserResponseDto getUserById(Long id) {
         User user = userDao.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
         return userMapper.toResponseDto(user);
+    }
+
+    public Object getUsersByIdsOrEmail(List<Long> ids, String email) {
+        if (ids != null && email != null) {
+            throw new InvalidRequestException("Specify user ids OR email");
+        }
+        if (email != null) {
+            return getUserByEmail(email);
+        }
+        if (ids != null) {
+            return getUsersByIds(ids);
+        }
+        throw new InvalidRequestException("Specify user ids or email");
     }
 
     public List<UserResponseDto> getUsersByIds(List<Long> ids) {

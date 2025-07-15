@@ -1,9 +1,7 @@
 package user_service.controller;
 
 import jakarta.validation.Valid;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
-import user_service.exception.InvalidRequestException;
 import user_service.service.UserService;
 
 import java.util.List;
@@ -43,19 +40,11 @@ public class UserController {
     }
 
     @GetMapping()
-    public ResponseEntity<?> getUsersByIdsOrEmail(
+    @ResponseStatus(HttpStatus.OK)
+    public Object getUsersByIdsOrEmail(
             @RequestParam(required = false) List<Long> ids,
             @RequestParam(required = false) String email) {
-        if (ids != null && email != null) {
-            throw new InvalidRequestException("Specify user ids OR email");
-        }
-        if (email != null) {
-            return new ResponseEntity<>(userService.getUserByEmail(email), HttpStatus.OK);
-        }
-        if (ids != null) {
-            return new ResponseEntity<>(userService.getUsersByIds(ids), HttpStatus.OK);
-        }
-        throw new InvalidRequestException("Specify user ids or email");
+        return userService.getUsersByIdsOrEmail(ids, email);
     }
 
     @PutMapping("/{id}")
