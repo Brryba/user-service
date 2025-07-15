@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 2
+      author: Yury Brazgunou
+      changes:
+        - createIndex:
+            indexName: surname_index
+            tableName: users
+            columns:
+              - column:
+                  name: surname
+        - createIndex:
+            indexName: email_index
+            tableName: users
+            columns:
+              - column:
+                  name: email
