@@ -3,6 +3,8 @@ package user_service.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,6 +29,37 @@ public class UserController {
     }
 
     private final UserService userService;
+
+    private long getAuthenticatedUserId() {
+        return (Long) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto getCurrentUser(@AuthenticationPrincipal Long userId) {
+        return userService.getUserById(userId);
+    }
+
+    @PostMapping("/me")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDto createCurrentUserProfile(@Valid @RequestBody UserRequestDto userRequestDto,
+                                                    @AuthenticationPrincipal Long userId) {
+        System.out.println(userId);
+        return userService.createUser(userRequestDto, userId);
+    }
+
+    @PutMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto updateCurrentUser(@RequestBody @Valid UserRequestDto user,
+                                             @AuthenticationPrincipal Long userId) {
+        return userService.updateUser(user, userId);
+    }
+
+    @DeleteMapping("/me")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCurrentUser(@AuthenticationPrincipal Long userId) {
+        userService.deleteUser(userId);
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

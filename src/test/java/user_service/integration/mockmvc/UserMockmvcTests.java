@@ -23,9 +23,10 @@ import user_service.controller.UserController;
 import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
-import user_service.exception.InvalidRequestException;
 import user_service.exception.UserNotFoundException;
-import user_service.exception.UsersNotFoundException;
+import user_service.security.JwtAuthenticationFilter;
+import user_service.security.JwtUtil;
+import user_service.security.SecurityConfig;
 import user_service.service.UserService;
 
 import java.time.LocalDate;
@@ -34,6 +35,7 @@ import java.util.List;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -49,7 +51,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @EnableWebMvc
 @SpringBootTest(classes = {UserController.class,
         UserMockmvcTests.ObjectMapperConfig.class,
-        ExceptionController.class})
+        ExceptionController.class,
+        JwtAuthenticationFilter.class,
+        SecurityConfig.class})
 public class UserMockmvcTests {
     @Configuration
     static class ObjectMapperConfig {
@@ -65,6 +69,9 @@ public class UserMockmvcTests {
     @MockitoBean
     private UserService userService;
 
+    @MockitoBean
+    private JwtUtil jwtUtil;
+
     @Autowired
     private MockMvc mockMvc;
 
@@ -76,6 +83,8 @@ public class UserMockmvcTests {
     private String userRequestDtoJson;
 
     private static UserResponseDto userResponseDto;
+
+    private static final String MOCK_TOKEN = "mockToken";
 
     @BeforeAll
     public static void createUserResponseDto() {
@@ -100,6 +109,9 @@ public class UserMockmvcTests {
                 .build();
 
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
+
+        when(jwtUtil.isTokenValid(any(String.class))).thenReturn(true);
+        when(jwtUtil.getUserIdFromToken(MOCK_TOKEN)).thenReturn(1L);
     }
 
     private ResultMatcher responseBodyEqualsDto(UserResponseDto user) {
@@ -118,26 +130,29 @@ public class UserMockmvcTests {
     public void getUserByIdTest_success() throws Exception {
         when(userService.getUserById(1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(get("/api/user/1"))
+        mockMvc.perform(get("/api/user/me")
+                .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(responseBodyEqualsDto(userResponseDto));
     }
 
     @Test
     public void getUserByIdTest_failure_noUserIdExists() throws Exception {
-        when(userService.getUserById(100L)).thenThrow(new UserNotFoundException(100L));
+        when(userService.getUserById(1L)).thenThrow(new UserNotFoundException(1L));
 
-        mockMvc.perform(get("/api/user/100"))
+        mockMvc.perform(get("/api/user/me")
+                .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id 100 not found"));
+                .andExpect(status().reason("User with id 1 not found. Create account first"));
     }
 
     @Test
     public void createNewUserTest_success() throws Exception {
-        when(userService.createUser(userRequestDto)).thenReturn(userResponseDto);
+        when(userService.createUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/me")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -150,7 +165,8 @@ public class UserMockmvcTests {
         userRequestDto.setEmail("@email@email.com");
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/me")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -163,7 +179,8 @@ public class UserMockmvcTests {
         userRequestDto.setBirthDate(LocalDate.of(3000, 1, 1));
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/me")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -172,64 +189,11 @@ public class UserMockmvcTests {
     }
 
     @Test
-    public void getUserByEmailTest_success() throws Exception {
-        when(userService.getUsersByIdsOrEmail(null, userRequestDto.getEmail()))
-                .thenReturn(userResponseDto);
-
-        mockMvc.perform(get("/api/user?email=email@email.com"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(responseBodyEqualsDto(userResponseDto));
-    }
-
-    @Test
-    public void getUserByEmailTest_failure_noUserEmailExists() throws Exception {
-        when(userService.getUsersByIdsOrEmail(null, userRequestDto.getEmail()))
-                .thenThrow(new UserNotFoundException(userRequestDto.getEmail()));
-
-        mockMvc.perform(get("/api/user?email=email@email.com"))
-                .andDo(print())
-                .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with email " + userRequestDto.getEmail() + " not found"));
-    }
-
-    @Test
-    public void getUsersByIds() throws Exception {
-        when(userService.getUsersByIdsOrEmail(List.of(1L, 2L), null))
-                .thenReturn(List.of(userResponseDto));
-
-        mockMvc.perform(get("/api/user?ids=1,2"))
-                .andDo(print())
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(1)));
-    }
-
-    @Test
-    public void getUsersByIds_failure_noneUserIdExists() throws Exception {
-        when(userService.getUsersByIdsOrEmail(List.of(1L, 2L), null))
-                .thenThrow(new UsersNotFoundException());
-
-        mockMvc.perform(get("/api/user?ids=1,2"))
-                .andDo(print())
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void getUsers_NoRequestParams() throws Exception {
-        when(userService.getUsersByIdsOrEmail(null, null))
-                .thenThrow(new InvalidRequestException("Bad request"));
-
-        mockMvc.perform(get("/api/user?wrong=param"))
-                .andDo(print())
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
     public void testUpdateUser_success() throws Exception {
         when(userService.updateUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(put("/api/user/1")
+        mockMvc.perform(put("/api/user/me")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -241,19 +205,21 @@ public class UserMockmvcTests {
     public void testUpdateUser_failure_noUserIdExists() throws Exception {
         when(userService.updateUser(userRequestDto, 1L)).thenThrow(new UserNotFoundException(1L));
 
-        mockMvc.perform(put("/api/user/1")
+        mockMvc.perform(put("/api/user/me")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id " + 1L + " not found"));
+                .andExpect(status().reason("User with id 1 not found. Create account first"));
     }
 
     @Test
     public void testDeleteUser_success() throws Exception {
         doNothing().when(userService).deleteUser(1L);
 
-        mockMvc.perform(delete("/api/user/1"))
+        mockMvc.perform(delete("/api/user/me")
+                .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }

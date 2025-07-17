@@ -13,6 +13,7 @@ import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
 import user_service.exception.EmailAlreadyExistsException;
 import user_service.exception.UserNotFoundException;
+import user_service.exception.UserProfileAlreadyExistsException;
 import user_service.exception.UsersNotFoundException;
 import user_service.mapper.CardMapperImpl;
 import user_service.mapper.UserMapperImpl;
@@ -56,7 +57,7 @@ public class UserServiceLayerUnitTests extends UserServiceBaseTests {
     public void createUserTest_success() {
         given(userDao.save(any(User.class))).willReturn(user);
 
-        UserResponseDto userResponseDto = userService.createUser(userRequestDto);
+        UserResponseDto userResponseDto = userService.createUser(userRequestDto, 1L);
 
         assertThat(userResponseDto).isNotNull();
         assertNotEquals(0, userResponseDto.getId());
@@ -69,8 +70,17 @@ public class UserServiceLayerUnitTests extends UserServiceBaseTests {
         given(userDao.findUserByEmail("email@email.com")).willReturn(Optional.of(user));
 
         assertThrows(EmailAlreadyExistsException.class,
-                () -> userService.createUser(userRequestDto),
+                () -> userService.createUser(userRequestDto, 1L),
                 "Email address email@email.com already exists");
+    }
+
+    @Test
+    public void createUserTest_failure_userAlreadyExists() {
+        given(userDao.findUserByEmail("email@email.com")).willReturn(Optional.empty());
+        given(userDao.findUserById(any(Long.class))).willReturn(Optional.of(user));
+
+        assertThrows(UserProfileAlreadyExistsException.class, () ->
+                userService.createUser(userRequestDto, 1L));
     }
 
     @Test
@@ -141,12 +151,12 @@ public class UserServiceLayerUnitTests extends UserServiceBaseTests {
     @Test
     public void updateUserTest_success() {
         given(userDao.save(any(User.class))).willReturn(user);
-        given(userDao.findUserById(1L)).willReturn(Optional.ofNullable(user));
 
-        userService.createUser(userRequestDto);
+        userService.createUser(userRequestDto, 1L);
         user.setName("Updated");
         userRequestDto.setName("Updated");
 
+        given(userDao.findUserById(1L)).willReturn(Optional.ofNullable(user));
         UserResponseDto userResponseDto = userService.updateUser(userRequestDto, 1L);
         assertThat(userResponseDto).isNotNull();
         assertThat(userResponseDto.getId()).isEqualTo(1L);

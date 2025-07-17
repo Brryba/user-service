@@ -101,7 +101,7 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void addNewUserTest_success() {
-        UserResponseDto userResponseDto = userService.createUser(userRequestDto);
+        UserResponseDto userResponseDto = userService.createUser(userRequestDto, 1L);
 
         Optional<User> foundUser = userDao.findUserById(userResponseDto.getId());
         assertThat(foundUser.isPresent()).isTrue();
@@ -120,12 +120,12 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void addNewUserTest_duplicateEmail() {
-        UserResponseDto firstResponseDto = userService.createUser(userRequestDto);
+        UserResponseDto firstResponseDto = userService.createUser(userRequestDto, 1L);
         String previousName = userRequestDto.getName();
 
         userRequestDto.setName("New Name");
         assertThrows(EmailAlreadyExistsException.class,
-                () -> userService.createUser(userRequestDto));
+                () -> userService.createUser(userRequestDto, 1L));
 
         UserResponseDto foundUser = userService.getUserById(firstResponseDto.getId());
         assertThat(foundUser).isNotNull();
@@ -144,9 +144,9 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void getUsersByIdsTest_success() {
-        UserResponseDto first = userService.createUser(userRequestDto);
+        UserResponseDto first = userService.createUser(userRequestDto, 1L);
         userRequestDto.setEmail("anotheremail@test.com");
-        UserResponseDto second = userService.createUser(userRequestDto);
+        UserResponseDto second = userService.createUser(userRequestDto, 2L);
 
         System.out.println(List.of(first.getId(), second.getId()));
         List<UserResponseDto> users = userService.getUsersByIds(List.of(first.getId(),
@@ -157,7 +157,7 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void getUsersByEmailTest_success() {
-        UserResponseDto savedUserDto = userService.createUser(userRequestDto);
+        UserResponseDto savedUserDto = userService.createUser(userRequestDto, 1L);
 
         UserResponseDto foundUserDto = userMapper.toResponseDto(
                 userDao.findUserByEmail(savedUserDto.getEmail()).orElseThrow());
@@ -173,7 +173,7 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void updateUserTest_success() {
-        UserResponseDto createdUser = userService.createUser(userRequestDto);
+        UserResponseDto createdUser = userService.createUser(userRequestDto, 1L);
 
         userRequestDto.setEmail("anotheremail@test.com");
         userRequestDto.setName("New Name");
@@ -197,7 +197,7 @@ public class UserTestContainersTests {
     @Test
     @Transactional
     void deleteUserTest_success() {
-        UserResponseDto createdUser = userService.createUser(userRequestDto);
+        UserResponseDto createdUser = userService.createUser(userRequestDto, 1L);
         userService.deleteUser(createdUser.getId());
 
         assertThat(userDao.findUserById(createdUser.getId()).isPresent()).isFalse();

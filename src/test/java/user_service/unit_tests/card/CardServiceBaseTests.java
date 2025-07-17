@@ -45,7 +45,6 @@ public class CardServiceBaseTests {
 
     protected CardRequestDto buildCardRequestDto() {
         return CardRequestDto.builder()
-                .userId(1L)
                 .holder("Some Holder")
                 .expirationDate("10/27")
                 .number("0011223344556677")

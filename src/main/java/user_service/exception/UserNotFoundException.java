@@ -5,7 +5,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 public class UserNotFoundException extends ResponseStatusException {
     public UserNotFoundException(long id) {
-        super(HttpStatus.NOT_FOUND, "User with id " + id + " not found");
+        super(HttpStatus.NOT_FOUND, "User with id " + id + " not found. Create account first");
     }
 
     public UserNotFoundException(String email) {

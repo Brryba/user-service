@@ -14,6 +14,7 @@ import user_service.entity.User;
 import user_service.exception.EmailAlreadyExistsException;
 import user_service.exception.InvalidRequestException;
 import user_service.exception.UserNotFoundException;
+import user_service.exception.UserProfileAlreadyExistsException;
 import user_service.exception.UsersNotFoundException;
 import user_service.mapper.UserMapper;
 
@@ -36,6 +37,23 @@ public class UserService {
         }
 
         User user = userMapper.toUser(userRequestDto);
+        user = userDao.save(user);
+        return userMapper.toResponseDto(user);
+    }
+
+    @Transactional
+    @CachePut(value = "user:id", key = "#result.id")
+    public UserResponseDto createUser(UserRequestDto userRequestDto, long currentUserId) {
+        String email = userRequestDto.getEmail();
+        if (userDao.findUserByEmail(email).isPresent()) {
+            throw new EmailAlreadyExistsException(email);
+        }
+        if (userDao.findUserById(currentUserId).isPresent()) {
+            throw new UserProfileAlreadyExistsException("User profile already exists");
+        }
+
+        User user = userMapper.toUser(userRequestDto);
+        user.setId(currentUserId);
         user = userDao.save(user);
         return userMapper.toResponseDto(user);
     }
@@ -69,7 +87,6 @@ public class UserService {
                 .map(userMapper::toResponseDto)
                 .collect(Collectors.toList());
     }
-
 
     public UserResponseDto getUserByEmail(String email) {
         User user = userDao.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email));

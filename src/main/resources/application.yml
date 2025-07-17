@@ -27,4 +27,13 @@ spring:
 server:
   error:
     include-stacktrace: never
+    include-message: always
   port: 8080
+
+
+logging:
+  level:
+    org:
+      springframework:
+        security: DEBUG
+        web: DEBUG
