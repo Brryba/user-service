@@ -30,8 +30,10 @@ server:
     include-message: always
   port: 8080
 
+
 logging:
   level:
     org:
       springframework:
-        web=DEBUG:
+        security: DEBUG
+        web: DEBUG

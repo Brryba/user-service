@@ -23,10 +23,14 @@ import user_service.dto.card.CardResponseDto;
 import user_service.exception.CardNotFoundException;
 import user_service.exception.CardNumberNotUniqueException;
 import user_service.exception.UserNotFoundException;
+import user_service.security.JwtAuthenticationFilter;
+import user_service.security.JwtUtil;
+import user_service.security.SecurityConfig;
 import user_service.service.CardService;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
@@ -39,10 +43,15 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @EnableWebMvc
 @SpringBootTest(classes = {CardController.class,
         ExceptionController.class,
-ObjectMapper.class})
+        ObjectMapper.class,
+        JwtAuthenticationFilter.class,
+        SecurityConfig.class})
 public class CardMockmvcTests {
     @MockitoBean
     private CardService cardService;
+
+    @MockitoBean
+    private JwtUtil jwtUtil;
 
     @Autowired
     private MockMvc mockMvc;
@@ -56,6 +65,8 @@ public class CardMockmvcTests {
 
     private static CardResponseDto cardResponseDto;
 
+    private static final String MOCK_TOKEN = "mockToken";
+
     @BeforeAll
     public static void createUserResponseDto() {
         cardResponseDto = CardResponseDto.builder()
@@ -68,7 +79,7 @@ public class CardMockmvcTests {
     }
 
     @BeforeEach
-    public void createUserRequestDto() throws JsonProcessingException {
+    public void setup() throws JsonProcessingException {
         cardRequestDto = CardRequestDto.builder()
                 .holder("CARD HOLDER")
                 .expirationDate("03/26")
@@ -76,6 +87,9 @@ public class CardMockmvcTests {
                 .build();
 
         cardRequestDtoJson = objectMapper.writeValueAsString(cardRequestDto);
+
+        when(jwtUtil.isTokenValid(any(String.class))).thenReturn(true);
+        when(jwtUtil.getUserIdFromToken(MOCK_TOKEN)).thenReturn(1L);
     }
 
     private ResultMatcher responseBodyEqualsDto(CardResponseDto card) {
@@ -93,8 +107,9 @@ public class CardMockmvcTests {
         when(cardService.createCard(cardRequestDto, 1L)).thenReturn(cardResponseDto);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/card")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(cardRequestDtoJson))
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cardRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isCreated())
                 .andExpect(responseBodyEqualsDto(cardResponseDto));
@@ -106,43 +121,45 @@ public class CardMockmvcTests {
         cardRequestDtoJson = objectMapper.writeValueAsString(cardRequestDto);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/card")
-        .contentType(MediaType.APPLICATION_JSON)
-                .content(cardRequestDtoJson))
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cardRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.errors[0]",
                         containsString("Card number should only contains 16 digits")));
     }
 
-
     @Test
-    public void createCard_failure_userNotExists_404() throws Exception {
-        when(cardService.createCard(cardRequestDto, 2L))
-                .thenThrow(new UserNotFoundException(cardRequestDto.getUserId()));
+    public void createCard_failure_userProfileNotExists_404() throws Exception {
+        when(cardService.createCard(cardRequestDto, 1L))
+                .thenThrow(new UserNotFoundException(1L));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/card")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(cardRequestDtoJson))
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cardRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     public void getCardByIdTest_success() throws Exception {
-        when(cardService.getCardById(1L)).thenReturn(cardResponseDto);
+        when(cardService.getCardById(1L, 1L)).thenReturn(cardResponseDto);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(responseBodyEqualsDto(cardResponseDto));
     }
 
-
     @Test
     public void getCardByIdTest_failure_cardNotFound_404() throws Exception {
-        when(cardService.getCardById(1L)).thenThrow(new CardNotFoundException(1L));
+        when(cardService.getCardById(1L, 1L)).thenThrow(new CardNotFoundException(1L));
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1"))
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason("Card with id 1 not found"));
@@ -150,11 +167,12 @@ public class CardMockmvcTests {
 
     @Test
     public void updateCardTest_success() throws Exception {
-        when(cardService.updateCard(cardRequestDto, 1)).thenReturn(cardResponseDto);
+        when(cardService.updateCard(cardRequestDto, 1L, 1L)).thenReturn(cardResponseDto);
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/card/1")
-                .contentType(MediaType.APPLICATION_JSON)
-        .content(cardRequestDtoJson))
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cardRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isOk())
                 .andExpect(responseBodyEqualsDto(cardResponseDto));
@@ -162,32 +180,53 @@ public class CardMockmvcTests {
 
     @Test
     public void updateCardTest_failure_duplicateNumber_409() throws Exception {
-        when(cardService.updateCard(cardRequestDto, 1L))
+        when(cardService.updateCard(cardRequestDto, 1L, 1L))
                 .thenThrow(new CardNumberNotUniqueException());
 
         mockMvc.perform(MockMvcRequestBuilders.put("/api/card/1")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(cardRequestDtoJson))
+                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(cardRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isConflict());
     }
 
     @Test
     public void deleteCardTest_success_204() throws Exception {
-        doNothing().when(cardService).deleteCard(1L);
+        doNothing().when(cardService).deleteCard(1L, 1L);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/card/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/card/1")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
 
     @Test
     public void deleteCardTest_failure_cardNotFound_404() throws Exception {
-        doThrow(new CardNotFoundException(1L)).when(cardService).deleteCard(1L);
+        doThrow(new CardNotFoundException(1L)).when(cardService).deleteCard(1L, 1L);
 
-        mockMvc.perform(MockMvcRequestBuilders.delete("/api/card/1"))
+        mockMvc.perform(MockMvcRequestBuilders.delete("/api/card/1")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason("Card with id 1 not found"));
+    }
+
+    @Test
+    public void accessWithoutToken_unauthorized_401() throws Exception {
+        when(jwtUtil.isTokenValid(any(String.class))).thenReturn(false);
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1"))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    public void accessWithInvalidToken_unauthorized_401() throws Exception {
+        when(jwtUtil.isTokenValid(any(String.class))).thenReturn(false);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/card/1")
+                        .header("Authorization", "Bearer " + MOCK_TOKEN))
+                .andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 }
