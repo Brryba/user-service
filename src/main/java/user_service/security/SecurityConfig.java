@@ -25,7 +25,7 @@
                     .authorizeHttpRequests(authorizeRequests ->
                             authorizeRequests
                                     .requestMatchers("/error").permitAll()
-                                    .requestMatchers("/api/user/**",
+                                    .requestMatchers("/api/user/me",
                                             "/api/card/**").authenticated()
                                     .anyRequest().denyAll()
                     );
