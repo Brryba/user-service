@@ -3,6 +3,7 @@ package user_service.controller;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +38,8 @@ public class UserController {
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDto getUserById(@PathVariable long id) {
+        System.out.println("Authentiated: User id is " + SecurityContextHolder.getContext().getAuthentication().
+                getPrincipal());
         return userService.getUserById(id);
     }
 
