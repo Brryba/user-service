@@ -13,6 +13,7 @@ import user_service.entity.Card;
 import user_service.exception.CardNotFoundException;
 import user_service.exception.CardNumberNotUniqueException;
 import user_service.exception.CardsNotFoundException;
+import user_service.exception.InvalidCardOwnerException;
 import user_service.exception.UserNotFoundException;
 import user_service.mapper.CardMapperImpl;
 import user_service.service.CardService;
@@ -42,8 +43,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
     private UserDao userDao;
 
     private boolean requestResponseEquals(CardRequestDto request, CardResponseDto response) {
-        return request.getUserId().equals(response.getUserId()) &&
-                request.getHolder().equals(response.getHolder())
+        return request.getHolder().equals(response.getHolder())
                 && request.getNumber().equals(response.getNumber())
                 && request.getExpirationDate().equals(response.getExpirationDate());
     }
@@ -59,7 +59,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
         given(cardDao.save(any(Card.class))).willReturn(card);
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
-        CardResponseDto cardResponseDto = cardService.createCard(cardRequestDto);
+        CardResponseDto cardResponseDto = cardService.createCard(cardRequestDto, 1L);
 
         assertThat(cardResponseDto).isNotNull();
         assertThat(requestResponseEquals(cardRequestDto, cardResponseDto)).isTrue();
@@ -72,24 +72,23 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
         assertThrows(CardNumberNotUniqueException.class,
-                () -> cardService.createCard(cardRequestDto));
+                () -> cardService.createCard(cardRequestDto, 1L));
     }
 
     @Test
     public void createCard_cardOwnerUserIdNotExists_throwsException() {
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
         when(cardDao.save(any(Card.class))).thenReturn(card);
-        cardRequestDto.setUserId(12345L);
 
         assertThrows(UserNotFoundException.class,
-                () -> cardService.createCard(cardRequestDto));
+                () -> cardService.createCard(cardRequestDto, 2L));
     }
 
     @Test
     public void getCardById_success() {
         when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
 
-        CardResponseDto cardResponseDto = cardService.getCardById(1L);
+        CardResponseDto cardResponseDto = cardService.getCardById(1L, 1L);
 
         assertThat(cardResponseDto).isNotNull();
         assertThat(cardResponseDto.getId()).isEqualTo(1L);
@@ -99,8 +98,15 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
     @Test
     public void getCardById_cardNotExists_throwsException() {
         assertThrows(CardNotFoundException.class,
-                () -> cardService.getCardById(12345L),
+                () -> cardService.getCardById(12345L, 1L),
                 "Card with id " + 12345L + " does not exist");
+    }
+
+    @Test
+    public void getCard_ofAnotherUser_failure() {
+        when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
+
+        assertThrows(InvalidCardOwnerException.class, () -> cardService.getCardById(1L, 2L));
     }
 
     @Test
@@ -110,7 +116,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
 
         when(cardDao.findCardsByIdIn(List.of(1L, 2L))).thenReturn(List.of(card, card2));
 
-        List<CardResponseDto> cards = cardService.getCardsByIds(List.of(1L, 2L));
+        List<CardResponseDto> cards = cardService.getCardsByIds(List.of(1L, 2L), 1L);
 
         assertThat(cards).isNotNull();
         assertThat(cards.size()).isEqualTo(2);
@@ -124,7 +130,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
     public void getAllCardsByIdsTest_notAllCardsWithIdsExist_success() {
         given(cardDao.findCardsByIdIn(List.of(1L, 2L))).willReturn(List.of(card));
 
-        List<CardResponseDto> cards = cardService.getCardsByIds(List.of(1L, 2L));
+        List<CardResponseDto> cards = cardService.getCardsByIds(List.of(1L, 2L), 1L);
 
         assertThat(cards).hasSize(1);
         assertThat(cards.getFirst().getId()).isEqualTo(1L);
@@ -134,7 +140,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
     @Test
     public void getAllCardsByIdsTest_noCardsFound_throwsException() {
         assertThrows(CardsNotFoundException.class,
-                () -> cardService.getCardsByIds(List.of(12345L, 67890L)));
+                () -> cardService.getCardsByIds(List.of(12345L, 67890L), 1L));
     }
 
     @Test
@@ -143,10 +149,10 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
         when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
-        CardResponseDto createdResponseDto = cardService.createCard(cardRequestDto);
+        CardResponseDto createdResponseDto = cardService.createCard(cardRequestDto, 1L);
         cardRequestDto.setHolder("Another Holder");
         CardResponseDto updatedResponseDto =
-                cardService.updateCard(cardRequestDto, createdResponseDto.getId());
+                cardService.updateCard(cardRequestDto, createdResponseDto.getId(), 1L);
 
         assertThat(updatedResponseDto).isNotNull();
         assertThat(requestResponseEquals(cardRequestDto, updatedResponseDto)).isTrue();
@@ -158,19 +164,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
         when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
 
         assertThrows(CardNotFoundException.class,
-                () -> cardService.updateCard(cardRequestDto, 12345L));
-    }
-
-    @Test
-    public void updateCard_cardOwnerUserIdNotExists_throwsException() {
-        when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
-        when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
-
-        ignoreUserCacheEvict();
-
-        cardRequestDto.setUserId(12345L);
-        assertThrows(UserNotFoundException.class,
-                () -> cardService.updateCard(cardRequestDto, 1L));
+                () -> cardService.updateCard(cardRequestDto, 12345L, 1L));
     }
 
     @Test
@@ -186,7 +180,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
         when(cardDao.findCardById(2L)).thenReturn(Optional.of(card2));
 
         assertThrows(CardNumberNotUniqueException.class,
-                () -> cardService.updateCard(cardRequestDto, 2L));
+                () -> cardService.updateCard(cardRequestDto, 2L, 1L));
     }
 
     @Test
@@ -196,7 +190,7 @@ public class CardServiceLayerUnitTests extends CardServiceBaseTests {
 
         ignoreUserCacheEvict();
 
-        cardService.deleteCard(1L);
+        cardService.deleteCard(1L, 1L);
 
         verify(cardDao, times(1)).delete(any(Card.class));
     }

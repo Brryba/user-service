@@ -8,6 +8,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.concurrent.ConcurrentMapCacheManager;
+import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import user_service.dto.card.CardResponseDto;
@@ -57,21 +58,22 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
     public void getCardById_shouldCacheResult() {
         when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
 
-        CardResponseDto responseDto = cardService.getCardById(1L);
+        CardResponseDto responseDto = cardService.getCardById(1L, 1L);
         Cache cardCache = cacheManager.getCache("card:id");
         long id = responseDto.getId();
 
         assertThat(cardCache).isNotNull();
-        assertThat(cardCache.get(id).get()).isNotNull();
-        assertThat(cardCache.get(id).get()).isSameAs(responseDto);
+        SimpleKey key = new SimpleKey(id, 1L);
+        assertThat(cardCache.get(key)).isNotNull();
+        assertThat(cardCache.get(key).get()).isSameAs(responseDto);
     }
 
     @Test
     public void getCardById_shouldUseCache() {
         when(cardDao.findCardById(1L)).thenReturn(Optional.ofNullable(card));
 
-        CardResponseDto responseDto = cardService.getCardById(1L);
-        CardResponseDto responseDto2 = cardService.getCardById(1L);
+        CardResponseDto responseDto = cardService.getCardById(1L, 1L);
+        CardResponseDto responseDto2 = cardService.getCardById(1L, 1L);
 
         assertThat(responseDto).isNotNull();
         assertThat(responseDto2).isNotNull();
@@ -84,7 +86,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
         when(cardDao.save(any(Card.class))).thenReturn(card);
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
-        CardResponseDto responseDtoAfterCreate = cardService.createCard(cardRequestDto);
+        CardResponseDto responseDtoAfterCreate = cardService.createCard(cardRequestDto, 1L);
         Cache cardCache = cacheManager.getCache("card:id");
         long id = responseDtoAfterCreate.getId();
 
@@ -98,12 +100,12 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
         when(cardDao.save(any(Card.class))).thenReturn(card);
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
-        CardResponseDto responseDtoAfterCreate = cardService.createCard(cardRequestDto);
+        CardResponseDto responseDtoAfterCreate = cardService.createCard(cardRequestDto, 1L);
         long id = responseDtoAfterCreate.getId();
         when(cardDao.findCardById(id)).thenReturn(Optional.of(card));
 
         cardRequestDto.setNumber("7766554433221100");
-        CardResponseDto responseDtoAfterModify = cardService.updateCard(cardRequestDto, id);
+        CardResponseDto responseDtoAfterModify = cardService.updateCard(cardRequestDto, id, 1L);
 
         Cache cardCache = cacheManager.getCache("card:id");
         assertThat(cardCache).isNotNull();
@@ -115,7 +117,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
     @Test
     public void deleteCard_shouldDeleteCacheResult() {
         when(cardDao.findCardById(1L)).thenReturn(Optional.of(card));
-        cardService.deleteCard(1L);
+        cardService.deleteCard(1L, 1L);
 
         Cache cardCache = cacheManager.getCache("card:id");
         if (cardCache != null) {
@@ -129,7 +131,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
         when(userDao.findUserById(1L)).thenReturn(Optional.ofNullable(cardUser));
 
         cacheManager.getCache("card:id").put(1L, "Some mock data");
-        cardService.createCard(cardRequestDto);
+        cardService.createCard(cardRequestDto, 1L);
 
         Cache userCache = cacheManager.getCache("user:id");
         if (userCache != null) {
@@ -145,7 +147,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
 
         cacheManager.getCache("card:id").put(1L, "Some mock data");
         cardRequestDto.setNumber("7766554433221100");
-        cardService.updateCard(cardRequestDto, 1L);
+        cardService.updateCard(cardRequestDto, 1L, 1L);
 
         Cache userCache = cacheManager.getCache("user:id");
         if (userCache != null) {
@@ -165,8 +167,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
 
         cacheManager.getCache("card:id").put(1L, "Some mock data");
         cacheManager.getCache("card:id").put(2L, "Some other mock data");
-        cardRequestDto.setUserId(2L);
-        cardService.updateCard(cardRequestDto, 1L);
+        cardService.updateCard(cardRequestDto, 1L, 1L);
 
         Cache userCache = cacheManager.getCache("user:id");
         if (userCache != null) {
@@ -181,7 +182,7 @@ public class CardServiceCacheTests extends CardServiceBaseTests {
         doNothing().when(cardDao).delete(any(Card.class));
 
         cacheManager.getCache("card:id").put(1L, "Some mock data");
-        cardService.deleteCard(1L);
+        cardService.deleteCard(1L, 1L);
 
         Cache userCache = cacheManager.getCache("user:id");
         if (userCache != null) {

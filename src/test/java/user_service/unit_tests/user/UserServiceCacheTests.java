@@ -72,7 +72,7 @@ public class UserServiceCacheTests extends UserServiceBaseTests {
     public void createUser_shouldCacheResult() {
         when(userDao.save(any(User.class))).thenReturn(user);
 
-        UserResponseDto responseDtoAfterCreate = userService.createUser(userRequestDto);
+        UserResponseDto responseDtoAfterCreate = userService.createUser(userRequestDto, 1L);
         Cache userCache = cacheManager.getCache("user:id");
         long id = responseDtoAfterCreate.getId();
 
@@ -85,7 +85,7 @@ public class UserServiceCacheTests extends UserServiceBaseTests {
     public void updateUser_shouldUpdateCacheResult() {
         when(userDao.save(any(User.class))).thenReturn(user);
 
-        UserResponseDto responseDtoAfterCreate = userService.createUser(userRequestDto);
+        UserResponseDto responseDtoAfterCreate = userService.createUser(userRequestDto, 1L);
         long id = responseDtoAfterCreate.getId();
         when(userDao.findUserById(id)).thenReturn(Optional.of(user));
 

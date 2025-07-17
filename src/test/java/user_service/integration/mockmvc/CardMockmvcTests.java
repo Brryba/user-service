@@ -70,7 +70,6 @@ public class CardMockmvcTests {
     @BeforeEach
     public void createUserRequestDto() throws JsonProcessingException {
         cardRequestDto = CardRequestDto.builder()
-                .userId(1L)
                 .holder("CARD HOLDER")
                 .expirationDate("03/26")
                 .number("0011223344556677")
@@ -91,7 +90,7 @@ public class CardMockmvcTests {
 
     @Test
     public void createCardTest_success_201() throws Exception {
-        when(cardService.createCard(cardRequestDto)).thenReturn(cardResponseDto);
+        when(cardService.createCard(cardRequestDto, 1L)).thenReturn(cardResponseDto);
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/card")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -118,7 +117,7 @@ public class CardMockmvcTests {
 
     @Test
     public void createCard_failure_userNotExists_404() throws Exception {
-        when(cardService.createCard(cardRequestDto))
+        when(cardService.createCard(cardRequestDto, 2L))
                 .thenThrow(new UserNotFoundException(cardRequestDto.getUserId()));
 
         mockMvc.perform(MockMvcRequestBuilders.post("/api/card")

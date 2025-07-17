@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.SimpleKey;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -86,7 +87,7 @@ public class CardTestContainerTests {
                         .surname("test")
                         .email("test@test.com")
                         .birthDate(LocalDate.now().minusYears(1))
-                        .build())
+                        .build(), 1L)
                 .getId();
     }
 
@@ -96,7 +97,6 @@ public class CardTestContainerTests {
                 .number("0011223344556677")
                 .holder("CARD HOLDER")
                 .expirationDate("03/27")
-                .userId(userId)
                 .build();
     }
 
@@ -119,7 +119,7 @@ public class CardTestContainerTests {
     @Test
     @Transactional
     void addNewCard_success() {
-        CardResponseDto createdCard = cardService.createCard(cardRequestDto);
+        CardResponseDto createdCard = cardService.createCard(cardRequestDto, 1L);
 
         assertThat(createdCard.getId()).isNotNull();
 
@@ -138,10 +138,8 @@ public class CardTestContainerTests {
     @Test
     @Transactional
     void addNewCardToNotExistingUser_failure() {
-        cardRequestDto.setUserId(11111L);
-
         assertThrows(UserNotFoundException.class,
-                () -> cardService.createCard(cardRequestDto),
+                () -> cardService.createCard(cardRequestDto, 11111L),
                 "User with id 11111 does not exist");
 
 
@@ -150,12 +148,12 @@ public class CardTestContainerTests {
     @Test
     @Transactional
     void updateCard_withDuplicatedNumber_failure() {
-        long id = cardService.createCard(cardRequestDto).getId();
+        long id = cardService.createCard(cardRequestDto, 1L).getId();
         cardRequestDto.setNumber("0000111122223333");
-        cardService.createCard(cardRequestDto);
+        cardService.createCard(cardRequestDto, 1L);
 
         assertThrows(CardNumberNotUniqueException.class,
-                () -> cardService.updateCard(cardRequestDto, id));
+                () -> cardService.updateCard(cardRequestDto, id, 1L));
     }
 
     @Test
@@ -165,7 +163,7 @@ public class CardTestContainerTests {
         assertNotNull(userCache);
         assertNotNull(userCache.get(userId, UserResponseDto.class));
 
-        CardResponseDto createdCard = cardService.createCard(cardRequestDto);
+        CardResponseDto createdCard = cardService.createCard(cardRequestDto, 1L);
         assertNull(userCache.get(userId, UserResponseDto.class));
 
         UserResponseDto userResponseDto = userService.getUserById(userId);
@@ -185,9 +183,9 @@ public class CardTestContainerTests {
     @Transactional
     void deleteCard_evictsUserCache_notReturnedWithNewUserServiceMethodCall
             (@Autowired EntityManager entityManager) {
-        CardResponseDto createdCard = cardService.createCard(cardRequestDto);
+        CardResponseDto createdCard = cardService.createCard(cardRequestDto, 1L);
 
-        cardService.deleteCard(createdCard.getId());
+        cardService.deleteCard(createdCard.getId(), 1L);
         entityManager.flush();
         Cache userCache = cacheManager.getCache("user:id");
         if (userCache != null) {
@@ -203,14 +201,14 @@ public class CardTestContainerTests {
     @Test
     @Transactional
     void deletingUser_deletesAllUserCards_andCaches() {
-        CardResponseDto createdCard = cardService.createCard(cardRequestDto);
+        CardResponseDto createdCard = cardService.createCard(cardRequestDto, 1L);
 
         userService.deleteUser(createdCard.getUserId());
 
         assertFalse(cardDao.findCardById(createdCard.getId()).isPresent());
         Cache cardCache = cacheManager.getCache("card:id");
         if (cardCache != null) {
-            assertNull(cardCache.get(userId, UserResponseDto.class));
+            assertNull(cardCache.get(new SimpleKey(createdCard.getId(), createdCard.getUserId()), UserResponseDto.class));
         }
     }
 }
