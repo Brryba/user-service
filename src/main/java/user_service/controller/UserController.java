@@ -1,6 +1,7 @@
 package user_service.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -22,38 +23,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     private final UserService userService;
 
     @GetMapping("/me")
     @ResponseStatus(HttpStatus.OK)
     public UserResponseDto getCurrentUser(@AuthenticationPrincipal Long userId) {
         return userService.getUserById(userId);
-    }
-
-    @PostMapping("/me")
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDto createCurrentUserProfile(@Valid @RequestBody UserRequestDto userRequestDto,
-                                                    @AuthenticationPrincipal Long userId) {
-        System.out.println(userId);
-        return userService.createUser(userRequestDto, userId);
-    }
-
-    @PutMapping("/me")
-    @ResponseStatus(HttpStatus.OK)
-    public UserResponseDto updateCurrentUser(@RequestBody @Valid UserRequestDto user,
-                                             @AuthenticationPrincipal Long userId) {
-        return userService.updateUser(user, userId);
-    }
-
-    @DeleteMapping("/me")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCurrentUser(@AuthenticationPrincipal Long userId) {
-        userService.deleteUser(userId);
     }
 
     @GetMapping("/{id}")
@@ -70,16 +47,23 @@ public class UserController {
         return new ResponseEntity<>(userService.getUsersByIdsOrEmail(ids, email), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserResponseDto updateUser(@PathVariable long id,
-                                      @RequestBody @Valid UserRequestDto user) {
-        return userService.updateUser(user, id);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDto createCurrentUserProfile(@Valid @RequestBody UserRequestDto userRequestDto,
+                                                    @AuthenticationPrincipal Long userId) {
+        return userService.createUser(userRequestDto, userId);
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto updateCurrentUser(@RequestBody @Valid UserRequestDto user,
+                                             @AuthenticationPrincipal Long userId) {
+        return userService.updateUser(user, userId);
+    }
+
+    @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable long id) {
-        userService.deleteUser(id);
+    public void deleteCurrentUser(@AuthenticationPrincipal Long userId) {
+        userService.deleteUser(userId);
     }
 }

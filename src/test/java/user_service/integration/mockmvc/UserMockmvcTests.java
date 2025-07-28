@@ -151,7 +151,7 @@ public class UserMockmvcTests {
     public void createNewUserTest_success() throws Exception {
         when(userService.createUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(post("/api/user/me")
+        mockMvc.perform(post("/api/user")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -165,7 +165,7 @@ public class UserMockmvcTests {
         userRequestDto.setEmail("@email@email.com");
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user/me")
+        mockMvc.perform(post("/api/user")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -179,7 +179,7 @@ public class UserMockmvcTests {
         userRequestDto.setBirthDate(LocalDate.of(3000, 1, 1));
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user/me")
+        mockMvc.perform(post("/api/user")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -192,7 +192,7 @@ public class UserMockmvcTests {
     public void testUpdateUser_success() throws Exception {
         when(userService.updateUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(put("/api/user/me")
+        mockMvc.perform(put("/api/user")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -205,7 +205,7 @@ public class UserMockmvcTests {
     public void testUpdateUser_failure_noUserIdExists() throws Exception {
         when(userService.updateUser(userRequestDto, 1L)).thenThrow(new UserNotFoundException(1L));
 
-        mockMvc.perform(put("/api/user/me")
+        mockMvc.perform(put("/api/user")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -218,7 +218,7 @@ public class UserMockmvcTests {
     public void testDeleteUser_success() throws Exception {
         doNothing().when(userService).deleteUser(1L);
 
-        mockMvc.perform(delete("/api/user/me")
+        mockMvc.perform(delete("/api/user")
                 .header("Authorization", "Bearer " + MOCK_TOKEN))
                 .andDo(print())
                 .andExpect(status().isNoContent());
