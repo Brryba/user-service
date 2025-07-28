@@ -23,7 +23,7 @@ jobs:
 
       - name: Test and Build with Maven
         env:
-          JWT_KEY: ${{ secrets.JWT_KEY }}
+          SPRING_APPLICATION_JSON: '{"JWT_KEY":"${{ secrets.JWT_KEY }}"}'
         run: mvn package
 
       - name: Upload artifact for container job
@@ -51,7 +51,7 @@ jobs:
 
       - name: Run Docker container
         env:
-          JWT_KEY: ${{ secrets.JWT_KEY }}
+          SPRING_APPLICATION_JSON: '{"JWT_KEY":"${{ secrets.JWT_KEY }}"}'
         run: |
           docker run -d --name user-service-container -e JWT_KEY=${{ secrets.JWT_KEY }} user-service-docker-image
 
