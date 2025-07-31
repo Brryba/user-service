@@ -26,9 +26,8 @@
                     .authorizeHttpRequests(authorizeRequests ->
                             authorizeRequests
                                     .requestMatchers("/error").permitAll()
-                                    .requestMatchers(HttpMethod.GET, "/api/user/me").hasRole("USER")
-                                    .requestMatchers(HttpMethod.GET, "/api/user/**").hasRole("SERVICE")
-                                    .requestMatchers("/api/user/**",
+                                    .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()
+                                    .requestMatchers("/api/user",
                                             "/api/card/**").authenticated()
                                     .anyRequest().denyAll()
                     );
