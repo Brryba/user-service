@@ -26,6 +26,7 @@
                     .authorizeHttpRequests(authorizeRequests ->
                             authorizeRequests
                                     .requestMatchers("/error").permitAll()
+                                    .requestMatchers(HttpMethod.POST, "/api/user/**").permitAll()
                                     .requestMatchers(HttpMethod.GET, "/api/user/me").authenticated()
                                     .requestMatchers("/api/user",
                                             "/api/card/**").authenticated()

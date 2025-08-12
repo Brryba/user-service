@@ -47,10 +47,10 @@ public class UserController {
         return new ResponseEntity<>(userService.getUsersByIdsOrEmail(ids, email), HttpStatus.OK);
     }
 
-    @PostMapping
+    @PostMapping("/{userId}")
     @ResponseStatus(HttpStatus.CREATED)
     public UserResponseDto createCurrentUserProfile(@Valid @RequestBody UserRequestDto userRequestDto,
-                                                    @AuthenticationPrincipal Long userId) {
+                                                    @PathVariable Long userId) {
         return userService.createUser(userRequestDto, userId);
     }
 
