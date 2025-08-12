@@ -1,5 +1,6 @@
     package user_service.security;
 
+    import jakarta.servlet.http.HttpServletResponse;
     import lombok.RequiredArgsConstructor;
     import org.springframework.context.annotation.Bean;
     import org.springframework.context.annotation.Configuration;
@@ -31,6 +32,12 @@
                                     .requestMatchers("/api/user",
                                             "/api/card/**").authenticated()
                                     .anyRequest().denyAll()
+                    )
+                    .exceptionHandling(exceptionHandling -> exceptionHandling
+                            .authenticationEntryPoint((request, response, authException) ->
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage()))
+                            .accessDeniedHandler((request, response, accessDeniedException) ->
+                                    response.sendError(HttpServletResponse.SC_FORBIDDEN, accessDeniedException.getMessage()))
                     );
             return http.build();
         }

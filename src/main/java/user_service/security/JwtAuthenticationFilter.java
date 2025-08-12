@@ -1,6 +1,7 @@
 package user_service.security;
 
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -25,11 +26,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletRequest request,
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
-    ) throws IOException {
+    ) throws IOException, ServletException {
         final String authHeader = request.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            send401UnauthorizedResponse(response, "Bearer authorization token is not found");
+            filterChain.doFilter(request, response);
             return;
         }
 
@@ -44,20 +45,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                         null,
                         List.of(userAuthority));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-            } else {
-                send401UnauthorizedResponse(response, "Jwt token is invalid");
-                return;
             }
 
             filterChain.doFilter(request, response);
         } catch (Exception exception) {
-            send401UnauthorizedResponse(response, exception.getMessage());
+            filterChain.doFilter(request, response);
         }
-    }
-
-    private void send401UnauthorizedResponse(HttpServletResponse response, String message) throws IOException {
-        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        response.setContentType("application/json");
-        response.getWriter().write("{\"error\": \"" + message +"\"}");
     }
 }
