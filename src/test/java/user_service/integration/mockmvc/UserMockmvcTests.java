@@ -151,7 +151,7 @@ public class UserMockmvcTests {
     public void createNewUserTest_success() throws Exception {
         when(userService.createUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/1")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -165,7 +165,7 @@ public class UserMockmvcTests {
         userRequestDto.setEmail("@email@email.com");
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/1")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
@@ -179,7 +179,7 @@ public class UserMockmvcTests {
         userRequestDto.setBirthDate(LocalDate.of(3000, 1, 1));
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
-        mockMvc.perform(post("/api/user")
+        mockMvc.perform(post("/api/user/1")
                         .header("Authorization", "Bearer " + MOCK_TOKEN)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
