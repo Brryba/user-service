@@ -1,7 +1,6 @@
 package user_service.dto.card;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,8 +12,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class CardRequestDto {
-    @NotNull(message = "User id is missing")
-    private Long userId;
     @NotBlank(message = "Card number is missing")
     @Pattern(regexp = "^[0-9]{16}$",
             message = "Card number should only contains 16 digits")

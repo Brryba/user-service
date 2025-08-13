@@ -2,6 +2,7 @@ package user_service.controller;
 
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,32 +30,36 @@ public class CardController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CardResponseDto create(@RequestBody @Valid CardRequestDto card) {
-        return cardService.createCard(card);
+    public CardResponseDto create(@RequestBody @Valid CardRequestDto card,
+                                  @AuthenticationPrincipal Long userId) {
+        return cardService.createCard(card, userId);
     }
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public CardResponseDto findById(@PathVariable long id) {
-        return cardService.getCardById(id);
+    public CardResponseDto findById(@PathVariable long id, @AuthenticationPrincipal Long userId) {
+        return cardService.getCardById(id, userId);
     }
 
     @GetMapping()
     @ResponseStatus(HttpStatus.OK)
-    public List<CardResponseDto> findCardsByIds(@RequestParam(required = false) List<Long> ids) {
-        return cardService.getCardsByIds(ids);
+    public List<CardResponseDto> findCardsByIds(@RequestParam(required = false) List<Long> ids,
+                                                @AuthenticationPrincipal Long userId) {
+        return cardService.getCardsByIds(ids, userId);
     }
 
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
     public CardResponseDto update(@PathVariable long id,
-                                  @RequestBody @Valid CardRequestDto cardRequestDto) {
-        return cardService.updateCard(cardRequestDto, id);
+                                  @RequestBody @Valid CardRequestDto cardRequestDto,
+                                  @AuthenticationPrincipal Long userId) {
+        return cardService.updateCard(cardRequestDto, id, userId);
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCard(@PathVariable long id) {
-        cardService.deleteCard(id);
+    public void deleteCard(@PathVariable long id,
+                           @AuthenticationPrincipal Long userId) {
+        cardService.deleteCard(id, userId);
     }
 }

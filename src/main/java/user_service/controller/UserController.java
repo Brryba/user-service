@@ -1,8 +1,10 @@
 package user_service.controller;
 
 import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,17 +23,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/user")
+@RequiredArgsConstructor
 public class UserController {
-    public UserController(UserService userService) {
-        this.userService = userService;
-    }
-
     private final UserService userService;
 
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public UserResponseDto addUser(@RequestBody @Valid UserRequestDto user) {
-        return userService.createUser(user);
+    @GetMapping("/me")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto getCurrentUser(@AuthenticationPrincipal Long userId) {
+        return userService.getUserById(userId);
     }
 
     @GetMapping("/{id}")
@@ -48,16 +47,23 @@ public class UserController {
         return new ResponseEntity<>(userService.getUsersByIdsOrEmail(ids, email), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
-    public UserResponseDto updateUser(@PathVariable long id,
-                                      @RequestBody @Valid UserRequestDto user) {
-        return userService.updateUser(user, id);
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserResponseDto createCurrentUserProfile(@Valid @RequestBody UserRequestDto userRequestDto,
+                                                    @AuthenticationPrincipal Long userId) {
+        return userService.createUser(userRequestDto, userId);
     }
 
-    @DeleteMapping("/{id}")
+    @PutMapping
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto updateCurrentUser(@RequestBody @Valid UserRequestDto user,
+                                             @AuthenticationPrincipal Long userId) {
+        return userService.updateUser(user, userId);
+    }
+
+    @DeleteMapping
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteUser(@PathVariable long id) {
-        userService.deleteUser(id);
+    public void deleteCurrentUser(@AuthenticationPrincipal Long userId) {
+        userService.deleteUser(userId);
     }
 }
