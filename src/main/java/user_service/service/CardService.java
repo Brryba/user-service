@@ -22,7 +22,6 @@ import user_service.exception.UserNotFoundException;
 import user_service.mapper.CardMapper;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -102,7 +101,7 @@ public class CardService {
                         throw new InvalidCardOwnerException("The card is owned by another user");
                     }
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     @Transactional

@@ -3,7 +3,6 @@ package user_service.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,12 +38,16 @@ public class UserController {
         return userService.getUserById(id);
     }
 
-    @GetMapping()
+    @GetMapping(params = "ids")
     @ResponseStatus(HttpStatus.OK)
-    public ResponseEntity<?> getUsersByIdsOrEmail(
-            @RequestParam(required = false) List<Long> ids,
-            @RequestParam(required = false) String email) {
-        return new ResponseEntity<>(userService.getUsersByIdsOrEmail(ids, email), HttpStatus.OK);
+    public List<UserResponseDto> getUsersByIds(@RequestParam List<Long> ids) {
+        return userService.getUsersByIds(ids);
+    }
+
+    @GetMapping(params = "email")
+    @ResponseStatus(HttpStatus.OK)
+    public UserResponseDto getUsersByEmail(@RequestParam String email) {
+        return userService.getUserByEmail(email);
     }
 
     @PostMapping("/{userId}")
