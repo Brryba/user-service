@@ -24,9 +24,6 @@ import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.exception.UserNotFoundException;
-import user_service.security.JwtAuthenticationFilter;
-import user_service.security.JwtUtil;
-import user_service.security.SecurityConfig;
 import user_service.service.UserService;
 
 import java.time.LocalDate;
@@ -35,7 +32,6 @@ import java.util.List;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -51,9 +47,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @EnableWebMvc
 @SpringBootTest(classes = {UserController.class,
         UserMockmvcTests.ObjectMapperConfig.class,
-        ExceptionController.class,
-        JwtAuthenticationFilter.class,
-        SecurityConfig.class})
+        ExceptionController.class})
 public class UserMockmvcTests {
     @Configuration
     static class ObjectMapperConfig {
@@ -69,9 +63,6 @@ public class UserMockmvcTests {
     @MockitoBean
     private UserService userService;
 
-    @MockitoBean
-    private JwtUtil jwtUtil;
-
     @Autowired
     private MockMvc mockMvc;
 
@@ -84,7 +75,7 @@ public class UserMockmvcTests {
 
     private static UserResponseDto userResponseDto;
 
-    private static final String MOCK_TOKEN = "mockToken";
+    private static final String USER_ID_HEADER = "X-User-Id";
 
     @BeforeAll
     public static void createUserResponseDto() {
@@ -109,9 +100,6 @@ public class UserMockmvcTests {
                 .build();
 
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
-
-        when(jwtUtil.isTokenValid(any(String.class))).thenReturn(true);
-        when(jwtUtil.getUserIdFromToken(MOCK_TOKEN)).thenReturn(1L);
     }
 
     private ResultMatcher responseBodyEqualsDto(UserResponseDto user) {
@@ -131,7 +119,7 @@ public class UserMockmvcTests {
         when(userService.getUserById(1L)).thenReturn(userResponseDto);
 
         mockMvc.perform(get("/api/user/me")
-                .header("Authorization", "Bearer " + MOCK_TOKEN))
+                        .header(USER_ID_HEADER, "1"))
                 .andExpect(status().isOk())
                 .andExpect(responseBodyEqualsDto(userResponseDto));
     }
@@ -141,7 +129,7 @@ public class UserMockmvcTests {
         when(userService.getUserById(1L)).thenThrow(new UserNotFoundException(1L));
 
         mockMvc.perform(get("/api/user/me")
-                .header("Authorization", "Bearer " + MOCK_TOKEN))
+                        .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
                 .andExpect(status().reason("User with id 1 not found. Create account first"));
@@ -152,7 +140,7 @@ public class UserMockmvcTests {
         when(userService.createUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
         mockMvc.perform(post("/api/user/1")
-                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -166,7 +154,7 @@ public class UserMockmvcTests {
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
         mockMvc.perform(post("/api/user/1")
-                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -180,7 +168,7 @@ public class UserMockmvcTests {
         userRequestDtoJson = objectMapper.writeValueAsString(userRequestDto);
 
         mockMvc.perform(post("/api/user/1")
-                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -193,7 +181,7 @@ public class UserMockmvcTests {
         when(userService.updateUser(userRequestDto, 1L)).thenReturn(userResponseDto);
 
         mockMvc.perform(put("/api/user")
-                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -206,7 +194,7 @@ public class UserMockmvcTests {
         when(userService.updateUser(userRequestDto, 1L)).thenThrow(new UserNotFoundException(1L));
 
         mockMvc.perform(put("/api/user")
-                        .header("Authorization", "Bearer " + MOCK_TOKEN)
+                        .header(USER_ID_HEADER, "1")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(userRequestDtoJson))
                 .andDo(print())
@@ -219,7 +207,7 @@ public class UserMockmvcTests {
         doNothing().when(userService).deleteUser(1L);
 
         mockMvc.perform(delete("/api/user")
-                .header("Authorization", "Bearer " + MOCK_TOKEN))
+                        .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNoContent());
     }
