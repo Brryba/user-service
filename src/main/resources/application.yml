@@ -26,14 +26,18 @@ spring:
   liquibase:
     change-log: classpath:/db/changelog/db.changelog-master.yaml
 
+  cloud:
+    discovery:
+      enabled: false
+    loadbalancer:
+      enabled: false
+
 server:
   error:
     include-stacktrace: never
-  port: 8080
+  port: 80
 
 eureka:
   client:
-    serviceUrl:
-      defaultZone: ${EUREKA_URI:http://localhost:8761/eureka}
-  instance:
-    prefer-ip-address: true
+    webclient:
+      enabled: false
