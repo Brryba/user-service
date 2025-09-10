@@ -10,11 +10,11 @@ import user_service.dao.UserDao;
 import user_service.dto.card.CardRequestDto;
 import user_service.dto.card.CardResponseDto;
 import user_service.entity.Card;
-import user_service.exception.CardNotFoundException;
-import user_service.exception.CardNumberNotUniqueException;
-import user_service.exception.CardsNotFoundException;
-import user_service.exception.InvalidCardOwnerException;
-import user_service.exception.UserNotFoundException;
+import user_service.exception.card.CardNotFoundException;
+import user_service.exception.card.CardNumberNotUniqueException;
+import user_service.exception.card.CardsNotFoundException;
+import user_service.exception.card.InvalidCardOwnerException;
+import user_service.exception.user.UserNotFoundException;
 import user_service.mapper.CardMapperImpl;
 import user_service.service.CardService;
 

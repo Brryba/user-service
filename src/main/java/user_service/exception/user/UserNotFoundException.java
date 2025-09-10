@@ -1,9 +1,9 @@
-package user_service.exception;
+package user_service.exception.user;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import user_service.exception.StatusCodeException;
 
-public class UserNotFoundException extends ResponseStatusException {
+public class UserNotFoundException extends StatusCodeException {
     public UserNotFoundException(long id) {
         super(HttpStatus.NOT_FOUND, "User with id " + id + " not found. Create account first");
     }

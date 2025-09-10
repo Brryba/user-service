@@ -11,10 +11,10 @@ import user_service.dao.UserDao;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
-import user_service.exception.EmailAlreadyExistsException;
-import user_service.exception.UserNotFoundException;
-import user_service.exception.UserProfileAlreadyExistsException;
-import user_service.exception.UsersNotFoundException;
+import user_service.exception.user.EmailAlreadyExistsException;
+import user_service.exception.user.UserNotFoundException;
+import user_service.exception.user.UserProfileAlreadyExistsException;
+import user_service.exception.user.UsersNotFoundException;
 import user_service.mapper.UserMapper;
 
 import java.util.List;

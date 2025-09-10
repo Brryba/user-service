@@ -23,7 +23,7 @@ import user_service.controller.UserController;
 import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
-import user_service.exception.UserNotFoundException;
+import user_service.exception.user.UserNotFoundException;
 import user_service.service.UserService;
 
 import java.time.LocalDate;
