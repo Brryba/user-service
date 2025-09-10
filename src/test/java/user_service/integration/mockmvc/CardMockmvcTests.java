@@ -150,7 +150,7 @@ public class CardMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("Card with id 1 not found"));
+                .andExpect(jsonPath("$.message").value("Card with id 1 not found"));
     }
 
     @Test
@@ -197,7 +197,7 @@ public class CardMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("Card with id 1 not found"));
+                .andExpect(jsonPath("$.message").value("Card with id 1 not found"));
     }
 
     @Test

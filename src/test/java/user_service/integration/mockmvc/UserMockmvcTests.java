@@ -132,7 +132,7 @@ public class UserMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id 1 not found. Create account first"));
+                .andExpect(jsonPath("$.message").value("User with id 1 not found. Create account first"));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class UserMockmvcTests {
                         .content(userRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id 1 not found. Create account first"));
+                .andExpect(jsonPath("$.message").value("User with id 1 not found. Create account first"));
     }
 
     @Test
