@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import user_service.dto.user.UserRequestDto;
@@ -41,13 +42,13 @@ public class UserController {
 
     @GetMapping(params = "ids")
     @ResponseStatus(HttpStatus.OK)
-    public List<UserResponseDto> getUsersByIds(@RequestHeader List<Long> ids) {
+    public List<UserResponseDto> getUsersByIds(@RequestParam List<Long> ids) {
         return userService.getUsersByIds(ids);
     }
 
     @GetMapping(params = "email")
     @ResponseStatus(HttpStatus.OK)
-    public UserResponseDto getUsersByEmail(@RequestHeader String email) {
+    public UserResponseDto getUsersByEmail(@RequestParam String email) {
         return userService.getUserByEmail(email);
     }
 
