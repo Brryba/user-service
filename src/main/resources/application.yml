@@ -32,6 +32,14 @@ spring:
     loadbalancer:
       enabled: false
 
+camunda.bpm.client:
+  base-url: ${CAMUNDA_URL}
+  lock-duration: 10000
+  subscriptions:
+    auth_service_create:
+      variable-names: userRequest, user_id
+  default-serialization-format: application/json
+
 server:
   error:
     include-stacktrace: never
