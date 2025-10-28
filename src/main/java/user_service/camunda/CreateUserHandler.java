@@ -18,6 +18,8 @@ import user_service.service.UserService;
 import user_service.exception.camunda.BpmnException;
 import user_service.exception.camunda.ParsingException;
 
+import java.util.Map;
+
 @Component
 @Slf4j
 @ExternalTaskSubscription("user_service_create")
@@ -42,6 +44,7 @@ public class CreateUserHandler implements ExternalTaskHandler {
 
         } catch (BpmnException e) {
             log.error("BPMN error: {}", e.getMessage());
+            externalTaskService.setVariables(externalTask, Map.of("error", e.getMessage()));
             externalTaskService.handleBpmnError(externalTask, SERVICE_ERROR, e.getMessage());
 
         } catch (ParsingException e) {
