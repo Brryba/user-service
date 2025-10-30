@@ -23,7 +23,7 @@ import user_service.controller.UserController;
 import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
-import user_service.exception.UserNotFoundException;
+import user_service.exception.user.UserNotFoundException;
 import user_service.service.UserService;
 
 import java.time.LocalDate;
@@ -132,7 +132,7 @@ public class UserMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id 1 not found. Create account first"));
+                .andExpect(jsonPath("$.message").value("User with id 1 not found. Create account first"));
     }
 
     @Test
@@ -199,7 +199,7 @@ public class UserMockmvcTests {
                         .content(userRequestDtoJson))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("User with id 1 not found. Create account first"));
+                .andExpect(jsonPath("$.message").value("User with id 1 not found. Create account first"));
     }
 
     @Test

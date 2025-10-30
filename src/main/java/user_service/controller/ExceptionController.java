@@ -1,18 +1,36 @@
 package user_service.controller;
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import user_service.dto.error.ErrorDto;
 import user_service.dto.error.ValidationErrorDto;
+import user_service.exception.StatusCodeException;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @ControllerAdvice
 public class ExceptionController {
+    @ExceptionHandler(StatusCodeException.class)
+    public ResponseEntity<ErrorDto> handleHttpStatusCodeException(StatusCodeException ex, HttpServletRequest request) {
+        ErrorDto errorDto = ErrorDto.builder()
+                .timestamp(LocalDateTime.now())
+                .status(ex.getHttpStatus().value())
+                .error(ex.getHttpStatus().value() + " " + ex.getHttpStatus().getReasonPhrase())
+                .message(ex.getMessage())
+                .path(request.getRequestURI())
+                .requestType(request.getMethod())
+                .build();
+
+        return new ResponseEntity<>(errorDto, HttpStatus.valueOf(ex.getHttpStatus().value()));
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ValidationErrorDto> handleValidationExceptions(
             MethodArgumentNotValidException ex) {

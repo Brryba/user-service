@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ import user_service.dao.UserDao;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.User;
-import user_service.exception.EmailAlreadyExistsException;
+import user_service.exception.user.EmailAlreadyExistsException;
 import user_service.mapper.UserMapper;
 import user_service.service.UserService;
 
@@ -35,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @SpringBootTest
 @EnableCaching
 @Testcontainers
+@ActiveProfiles("test")
 public class UserTestContainersTests {
     @Autowired
     private UserDao userDao;

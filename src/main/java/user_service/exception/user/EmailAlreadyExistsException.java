@@ -1,9 +1,9 @@
-package user_service.exception;
+package user_service.exception.user;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
+import user_service.exception.StatusCodeException;
 
-public class EmailAlreadyExistsException extends ResponseStatusException {
+public class EmailAlreadyExistsException extends StatusCodeException {
     public EmailAlreadyExistsException(String email) {
         super(HttpStatus.CONFLICT, "Email address " + email +" already exists");
     }

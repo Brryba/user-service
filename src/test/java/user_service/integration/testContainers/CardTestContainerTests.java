@@ -11,6 +11,7 @@ import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.cache.interceptor.SimpleKey;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,8 +26,8 @@ import user_service.dto.card.CardResponseDto;
 import user_service.dto.user.UserRequestDto;
 import user_service.dto.user.UserResponseDto;
 import user_service.entity.Card;
-import user_service.exception.CardNumberNotUniqueException;
-import user_service.exception.UserNotFoundException;
+import user_service.exception.card.CardNumberNotUniqueException;
+import user_service.exception.user.UserNotFoundException;
 import user_service.mapper.CardMapper;
 import user_service.service.CardService;
 import user_service.service.UserService;
@@ -46,6 +47,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @EnableCaching
 @Testcontainers
+@ActiveProfiles("test")
 public class CardTestContainerTests {
     @Autowired
     private CardDao cardDao;

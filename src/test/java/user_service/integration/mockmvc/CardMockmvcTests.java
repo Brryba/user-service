@@ -20,9 +20,9 @@ import user_service.controller.CardController;
 import user_service.controller.ExceptionController;
 import user_service.dto.card.CardRequestDto;
 import user_service.dto.card.CardResponseDto;
-import user_service.exception.CardNotFoundException;
-import user_service.exception.CardNumberNotUniqueException;
-import user_service.exception.UserNotFoundException;
+import user_service.exception.card.CardNotFoundException;
+import user_service.exception.card.CardNumberNotUniqueException;
+import user_service.exception.user.UserNotFoundException;
 import user_service.service.CardService;
 
 import static org.hamcrest.Matchers.containsString;
@@ -150,7 +150,7 @@ public class CardMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("Card with id 1 not found"));
+                .andExpect(jsonPath("$.message").value("Card with id 1 not found"));
     }
 
     @Test
@@ -197,7 +197,7 @@ public class CardMockmvcTests {
                         .header(USER_ID_HEADER, "1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
-                .andExpect(status().reason("Card with id 1 not found"));
+                .andExpect(jsonPath("$.message").value("Card with id 1 not found"));
     }
 
     @Test

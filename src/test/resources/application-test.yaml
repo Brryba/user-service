@@ -1,0 +1,4 @@
+camunda:
+  bpm:
+    client:
+      disable-auto-fetching: true
