@@ -32,19 +32,14 @@ spring:
     loadbalancer:
       enabled: false
 
-camunda.bpm.client:
-  base-url: ${CAMUNDA_URL}
-  lock-duration: 10000
-  disable-backoff-strategy: true
-  subscriptions:
-    auth_service_create:
-      variable-names: userRequest, user_id
-  default-serialization-format: application/json
+camunda:
+  client:
+    mode: self-managed
 
 server:
   error:
     include-stacktrace: never
-  port: 80
+  port: 8099
 
 eureka:
   client:
