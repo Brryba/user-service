@@ -19,7 +19,7 @@ import java.util.Map;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class CamundaWorkers {
+public class UserCreationWorker {
     private final ObjectMapper objectMapper;
     private final UserService userService;
 
